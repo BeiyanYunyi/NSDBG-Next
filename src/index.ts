@@ -23,7 +23,7 @@ import wait from "./utils/wait";
   const cont = await pageInstance.page.content();
   const lastPageNum = getLastPageNum(cont);
   const pages = getPagesURL(process.env.ENV === "dev" ? 1 : lastPageNum);
-  await wait(5000 + (Math.random() - 0.5) * 2000);
+  await wait(2000 + (Math.random() - 0.5) * 2000);
   await getTopics(pages);
   await pageInstance.page.close();
   process.exit(0);

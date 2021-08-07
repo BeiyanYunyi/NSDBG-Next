@@ -23,6 +23,7 @@ export default class SQLStorageProvider implements StorageProvider {
         table.integer("reply").unsigned();
         table.bigInteger("lastReplyTime").nullable().unsigned();
         table.bigInteger("topicID").primary().unsigned();
+        table.boolean("isElite");
       });
   }
 

@@ -5,4 +5,5 @@ export default interface Topic {
   reply: number;
   lastReplyTime: number | null;
   topicID: number;
+  isElite: boolean;
 }

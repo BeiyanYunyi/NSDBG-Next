@@ -13,7 +13,12 @@ const getTopics = async (pages: string[]) => {
   const topicSet: Set<Topic> = new Set();
   const db = new SQLStorageProvider();
   for (const aPage of pages) {
-    await pageInstance.page.goto(aPage);
+    try {
+      await pageInstance.page.goto(aPage);
+    } catch (_e) {
+      await wait(2000 + (Math.random() - 0.5) * 2000);
+      continue;
+    }
     const cont = await pageInstance.page.content();
     const dom = new JSDOM(cont);
     if (dom.window.document.querySelector("table.olt")) {
@@ -48,6 +53,8 @@ const getTopics = async (pages: string[]) => {
             .href!.substring(35)
             .replace("/", "")
         ),
+
+        isElite: Boolean(tr.querySelector("span.elite_topic_lable")),
       }));
       topicAry.forEach((topic) => {
         topicSet.add(topic);
