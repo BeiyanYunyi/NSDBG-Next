@@ -1,7 +1,8 @@
 export default interface Topic {
   title: string;
-  author: string;
-  reply: string;
-  lastReplyTime: string;
-  link: string;
+  authorID: string;
+  authorName: string;
+  reply: number;
+  lastReplyTime: number | null;
+  topicID: number;
 }

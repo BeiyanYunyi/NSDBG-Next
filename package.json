@@ -48,8 +48,10 @@
     "@bitauth/libauth": "^1.17.1",
     "cross-env": "^7.0.3",
     "jsdom": "^16.7.0",
+    "knex": "^0.95.9",
     "lodash": "^4.17.21",
-    "playwright": "^1.13.1"
+    "playwright": "^1.13.1",
+    "sqlite3": "^5.0.2"
   },
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
