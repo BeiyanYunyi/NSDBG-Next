@@ -1,5 +1,3 @@
-import path from "path/posix";
-
 import playwright from "playwright";
 
 import config from "./config/config";
@@ -7,6 +5,7 @@ import pageInstance from "./instances/Page";
 import getLastPageNum from "./utils/getter/getLastPageNum";
 import getPagesURL from "./utils/getter/getPagesURL";
 import getTopics from "./utils/getter/getTopics";
+import groupURL from "./utils/groupURL";
 import wait from "./utils/wait";
 
 (async () => {
@@ -20,7 +19,7 @@ import wait from "./utils/wait";
     },
   });
   pageInstance.changePage(page);
-  await pageInstance.page.goto(path.join(config.groupURL, "discussion"));
+  await pageInstance.page.goto(groupURL);
   const cont = await pageInstance.page.content();
   const lastPageNum = getLastPageNum(cont);
   const pages = getPagesURL(process.env.ENV === "dev" ? 1 : lastPageNum);
