@@ -8,6 +8,9 @@ import getTopics from "./utils/getTopics";
 import wait from "./utils/wait";
 
 (async () => {
+  if (process.env.ENV === "dev") {
+    console.log("处于开发模式，只爬取第一页用于测试");
+  }
   const pw = await playwright.webkit.launch({ headless: false });
   const page = await pw.newPage({
     extraHTTPHeaders: {
@@ -18,7 +21,7 @@ import wait from "./utils/wait";
   await pageInstance.page.goto(`${config.groupURL}/discussion`);
   const cont = await pageInstance.page.content();
   const lastPageNum = getLastPageNum(cont);
-  const pages = getPagesURL(1);
+  const pages = getPagesURL(process.env.ENV === "dev" ? 1 : lastPageNum);
   await wait(5000 + (Math.random() - 0.5) * 2000);
   const topics = await getTopics(pages);
   console.log(topics);
