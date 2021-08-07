@@ -1,3 +1,3 @@
-# node-scraper-douban-groups-playwright
+# node-scraper-douban-groups-next
 
-豆瓣小组爬虫
+豆瓣小组爬虫，使用 playwright 编写

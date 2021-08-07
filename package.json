@@ -1,5 +1,5 @@
 {
-  "name": "node-scraper-douban-groups-playwright",
+  "name": "node-scraper-douban-groups-next",
   "version": "1.0.0",
   "description": "豆瓣小组爬虫",
   "main": "build/main/index.js",
