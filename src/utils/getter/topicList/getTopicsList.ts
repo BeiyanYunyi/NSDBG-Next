@@ -2,21 +2,21 @@
 import { JSDOM } from "jsdom";
 import lodash from "lodash";
 
-import SQLStorageProvider from "../../database/SQLStorageProvider";
-import pageInstance from "../../instances/Page";
-import Topic from "../../types/topic";
-import formatLastReplyTime from "../formatter/formatLastReplyTime";
-import formatReplyNumber from "../formatter/formatReplyNumber";
-import wait from "../wait";
+import SQLStorageProvider from "../../../database/SQLStorageProvider";
+import pageInstance from "../../../instances/Page";
+import Topic from "../../../types/topic";
+import formatLastReplyTime from "../../formatter/formatLastReplyTime";
+import formatReplyNumber from "../../formatter/formatReplyNumber";
+import { basicWait } from "../../wait";
 
-const getTopics = async (pages: string[]) => {
+const getTopicsList = async (pages: string[]) => {
   const topicSet: Set<Topic> = new Set();
   const db = new SQLStorageProvider();
   for (const aPage of pages) {
     try {
       await pageInstance.page.goto(aPage);
     } catch (_e) {
-      await wait(2000 + (Math.random() - 0.5) * 2000);
+      await basicWait();
       continue;
     }
     const cont = await pageInstance.page.content();
@@ -55,6 +55,9 @@ const getTopics = async (pages: string[]) => {
         ),
 
         isElite: Boolean(tr.querySelector("span.elite_topic_lable")),
+
+        content: null, //这里没获取到
+        lastFetchTime: null, // 同上
       }));
       topicAry.forEach((topic) => {
         topicSet.add(topic);
@@ -65,9 +68,9 @@ const getTopics = async (pages: string[]) => {
       console.log("当前页无帖");
       break;
     }
-    await wait(2000 + (Math.random() - 0.5) * 2000);
+    await basicWait();
   }
   return 0;
 };
 
-export default getTopics;
+export default getTopicsList;

@@ -6,4 +6,6 @@ export default interface Topic {
   lastReplyTime: number | null;
   topicID: number;
   isElite: boolean;
+  content: string | null;
+  lastFetchTime: number | null;
 }

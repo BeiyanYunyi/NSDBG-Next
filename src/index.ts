@@ -1,12 +1,15 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import playwright from "playwright";
 
 import config from "./config/config";
+import SQLStorageProvider from "./database/SQLStorageProvider";
 import pageInstance from "./instances/Page";
-import getLastPageNum from "./utils/getter/getLastPageNum";
-import getPagesURL from "./utils/getter/getPagesURL";
-import getTopics from "./utils/getter/getTopics";
+import getTopic from "./utils/getter/topicContent/getTopic";
+import getLastPageNum from "./utils/getter/topicList/getLastPageNum";
+import getPagesURL from "./utils/getter/topicList/getPagesURL";
+import getTopicsList from "./utils/getter/topicList/getTopicsList";
 import groupURL from "./utils/groupURL";
-import wait from "./utils/wait";
+import { basicWait } from "./utils/wait";
 
 (async () => {
   if (process.env.ENV === "dev") {
@@ -23,8 +26,20 @@ import wait from "./utils/wait";
   const cont = await pageInstance.page.content();
   const lastPageNum = getLastPageNum(cont);
   const pages = getPagesURL(process.env.ENV === "dev" ? 1 : lastPageNum);
-  await wait(2000 + (Math.random() - 0.5) * 2000);
-  await getTopics(pages);
+  await basicWait();
+  await getTopicsList(pages);
+  const storage = new SQLStorageProvider();
+  const topicIDs = await storage.getAllTopicID();
+  for await (const topicID of topicIDs!) {
+    try {
+      await getTopic(topicID);
+    } catch (e) {
+      console.error(e);
+      await basicWait();
+      continue;
+    }
+    await basicWait();
+  }
   await pageInstance.page.close();
   process.exit(0);
 })();

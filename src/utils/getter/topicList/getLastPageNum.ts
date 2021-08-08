@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import lodash from "lodash";
 
-import groupURL from "../groupURL";
+import groupURL from "../../groupURL";
 
 const getLastPageNum = (cont: string) => {
   const dom = new JSDOM(cont);
