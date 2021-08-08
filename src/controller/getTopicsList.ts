@@ -2,12 +2,12 @@
 import { JSDOM } from "jsdom";
 import lodash from "lodash";
 
-import SQLStorageProvider from "../../../database/SQLStorageProvider";
-import pageInstance from "../../../instances/Page";
-import Topic from "../../../types/topic";
-import formatLastReplyTime from "../../formatter/formatLastReplyTime";
-import formatReplyNumber from "../../formatter/formatReplyNumber";
-import { basicWait } from "../../wait";
+import SQLStorageProvider from "../database/SQLStorageProvider";
+import pageInstance from "../instances/Page";
+import Topic from "../types/topic";
+import formatLastReplyTime from "../utils/formatLastReplyTime";
+import formatReplyNumber from "../utils/formatReplyNumber";
+import { basicWait } from "../utils/wait";
 
 const getTopicsList = async (pages: string[]) => {
   const topicSet: Set<Topic> = new Set();

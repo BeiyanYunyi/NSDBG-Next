@@ -1,5 +1,6 @@
 import { knex, Knex } from "knex";
 
+import config from "../config/config";
 import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
 import Topic from "../types/topic";
@@ -9,7 +10,11 @@ export default class SQLStorageProvider implements StorageProvider {
   constructor() {
     this.db = knex({
       client: "sqlite3",
-      connection: { filename: "./data/data.db" },
+      connection: {
+        filename: `./data/data${config.groupURL
+          .substring(29)
+          .replace("/", "")}.db`,
+      },
       useNullAsDefault: true,
     });
   }
@@ -69,7 +74,14 @@ export default class SQLStorageProvider implements StorageProvider {
       await this.db<Topic>("topicList")
         .insert(topics)
         .onConflict("topicID")
-        .merge();
+        .merge([
+          "authorID",
+          "authorName",
+          "isElite",
+          "lastReplyTime",
+          "reply",
+          "title",
+        ]);
     } catch (e) {
       console.error(e);
     }
@@ -98,6 +110,22 @@ export default class SQLStorageProvider implements StorageProvider {
     } catch (e) {
       console.log(e);
       return null;
+    }
+  }
+
+  async getTopicIDForUpdate() {
+    try {
+      const topicID = await this.db<Topic>("topicList")
+        .whereRaw("lastFetchTime < lastReplyTime")
+        .orWhereNull("lastFetchTime")
+        .orWhereNotNull("content")
+        .select("topicID")
+        .orderBy("isElite", "desc") // 优先爬精品
+        .limit(config.fetchLimit);
+      return topicID.map((obj) => obj.topicID);
+    } catch (e) {
+      console.log(e);
+      return [];
     }
   }
 

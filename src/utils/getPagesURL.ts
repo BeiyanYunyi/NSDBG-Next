@@ -1,4 +1,4 @@
-import groupURL from "../../groupURL";
+import groupURL from "./groupURL";
 
 const getPagesURL = (lastPageNum: number): string[] => {
   const aryToReturn: string[] = [];

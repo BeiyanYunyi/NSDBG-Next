@@ -10,6 +10,7 @@ export default class StorageProvider {
   ): Promise<unknown>;
   queryTopicInfo(topicID: string | number): Promise<Topic | null>;
   getAllTopicID(): Promise<number[] | null>;
+  getTopicIDForUpdate(): Promise<number[]>;
   insertOrReplaceReplies(replies: Reply[]): Promise<unknown>;
   updateReply(
     replyID: string | number,

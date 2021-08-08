@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { JSDOM } from "jsdom";
 
-import pageInstance from "../../../instances/Page";
-import Reply from "../../../types/Reply";
-import { basicWait } from "../../wait";
+import pageInstance from "../instances/Page";
+import Reply from "../types/Reply";
+import { basicWait } from "../utils/wait";
 
 const getTopicReply = async (topicID: number | string) => {
   console.log(`在爬${topicID}的回复`);

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { JSDOM } from "jsdom";
 
-import SQLStorageProvider from "../../../database/SQLStorageProvider";
-import pageInstance from "../../../instances/Page";
+import SQLStorageProvider from "../database/SQLStorageProvider";
+import pageInstance from "../instances/Page";
 
 import getTopicReply from "./getTopicReply";
 
