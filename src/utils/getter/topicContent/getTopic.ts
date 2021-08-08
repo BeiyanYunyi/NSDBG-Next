@@ -27,7 +27,7 @@ const getTopic = async (topicID: number | string) => {
     lastFetchTime: Math.floor(Date.now() / 1000),
   });
   const replies = await getTopicReply(topicID);
-  await storage.insertOrReplaceReplies(replies);
+  if (replies.length !== 0) await storage.insertOrReplaceReplies(replies);
 };
 
 export default getTopic;
