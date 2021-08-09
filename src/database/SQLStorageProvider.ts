@@ -11,7 +11,7 @@ export default class SQLStorageProvider implements StorageProvider {
     this.db = knex({
       client: "sqlite3",
       connection: {
-        filename: `./data/data${config.groupURL
+        filename: `./data/data-${config.groupURL
           .substring(29)
           .replace("/", "")}.db`,
       },
@@ -27,7 +27,7 @@ export default class SQLStorageProvider implements StorageProvider {
         table.string("authorID");
         table.string("authorName");
         table.integer("reply").unsigned();
-        table.bigInteger("lastReplyTime").nullable().unsigned();
+        table.bigInteger("lastReplyTime").nullable().unsigned().index();
         table.bigInteger("topicID").primary().unsigned();
         table.boolean("isElite");
         table.text("content").nullable();
@@ -41,7 +41,7 @@ export default class SQLStorageProvider implements StorageProvider {
         table.string("authorID");
         table.string("authorName");
         table.boolean("isPoster");
-        table.bigInteger("replyTime").unsigned();
+        table.bigInteger("replyTime").unsigned().index();
         table.boolean("quoting");
         table.text("quotingImage").nullable();
         table.text("quotingText").nullable();
@@ -105,6 +105,7 @@ export default class SQLStorageProvider implements StorageProvider {
 
   async getLatestTopicTime() {
     try {
+      await this.createTable();
       const topicAry = await this.db<Topic>("topicList")
         .orderBy("lastReplyTime", "desc")
         .select("lastReplyTime")

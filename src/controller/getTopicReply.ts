@@ -6,7 +6,6 @@ import Reply from "../types/Reply";
 import { basicWait } from "../utils/wait";
 
 const getTopicReply = async (topicID: number | string) => {
-  console.log(`在爬${topicID}的回复`);
   // 该函数被 getTopic() 调用，因此假设此时已经在帖子页面内，减少刷新
   const content = await pageInstance.page.content();
   const dom = new JSDOM(content);
@@ -16,7 +15,13 @@ const getTopicReply = async (topicID: number | string) => {
     const pages = Number(
       paginator.querySelector("span.thispage")!.attributes[1].textContent!
     );
+    // 先爬第一页
+    getTopicReplyOfOnePage(dom, topicID).forEach((reply) =>
+      replySet.add(reply)
+    );
+    // 从第二页开始循环爬
     for (let i = 2; i <= pages; i++) {
+      await basicWait();
       await pageInstance.page.goto(
         `https://www.douban.com/group/topic/${topicID}/?start=${(i - 1) * 100}`
       );
@@ -25,7 +30,6 @@ const getTopicReply = async (topicID: number | string) => {
       getTopicReplyOfOnePage(dom, topicID).forEach((reply) =>
         replySet.add(reply)
       );
-      await basicWait();
     }
   } else {
     getTopicReplyOfOnePage(dom, topicID).forEach((reply) =>

@@ -46,6 +46,8 @@
   },
   "dependencies": {
     "@bitauth/libauth": "^1.17.1",
+    "cli-progress": "^3.9.0",
+    "colors": "^1.4.0",
     "cross-env": "^7.0.3",
     "jsdom": "^16.7.0",
     "knex": "^0.95.9",
@@ -57,6 +59,8 @@
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@types/cli-progress": "^3.9.2",
+    "@types/colors": "^1.2.1",
     "@types/jsdom": "^16.2.13",
     "@types/lodash": "^4.14.172",
     "@types/prompts": "^2.0.14",

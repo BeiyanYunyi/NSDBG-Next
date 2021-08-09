@@ -6,7 +6,6 @@ const wait = (ms: number) => {
 
 export const basicWait = async () => {
   const delay = (Math.random() + 0.5) * config.delay;
-  console.log(`等个${Math.floor(delay)}毫秒`);
   return await wait(delay);
 };
 

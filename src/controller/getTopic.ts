@@ -7,7 +7,6 @@ import pageInstance from "../instances/Page";
 import getTopicReply from "./getTopicReply";
 
 const getTopic = async (topicID: number | string) => {
-  console.log(`在爬${topicID}`);
   await pageInstance.page.goto(
     `https://www.douban.com/group/topic/${topicID}/`
   );

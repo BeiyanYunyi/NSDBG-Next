@@ -4,6 +4,7 @@ import lodash from "lodash";
 
 import SQLStorageProvider from "../database/SQLStorageProvider";
 import pageInstance from "../instances/Page";
+import progressBar from "../instances/ProgressBar";
 import Topic from "../types/topic";
 import formatLastReplyTime from "../utils/formatLastReplyTime";
 import formatReplyNumber from "../utils/formatReplyNumber";
@@ -14,10 +15,12 @@ const getTopicsList = async (pages: string[]) => {
   const db = new SQLStorageProvider();
   const lastReplyTimeInDB = await db.getLatestTopicTime();
   if (lastReplyTimeInDB) console.log("数据库中已有数据，进行增量更新");
+  progressBar.start(pages.length, 0, { status: "获取帖子列表" });
   for (const aPage of pages) {
     try {
       await pageInstance.page.goto(aPage);
-    } catch (_e) {
+    } catch (e) {
+      console.error(e);
       await basicWait();
       continue;
     }
@@ -76,11 +79,10 @@ const getTopicsList = async (pages: string[]) => {
         topicSet.add(topic);
       });
       await db.insertOrReplaceTopicInfo(topicAry);
-      console.log(`已爬取 ${aPage}`);
     } else {
-      console.log("当前页无帖");
       break;
     }
+    progressBar.increment(1);
     await basicWait();
   }
   return 0;
