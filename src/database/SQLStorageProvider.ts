@@ -49,6 +49,7 @@ export default class SQLStorageProvider implements StorageProvider {
         table.string("quotingAuthorName").nullable();
         table.text("image").nullable();
         table.text("content");
+        table.foreign("topicID").references("topicList.topicID");
       });
   }
 
@@ -61,7 +62,7 @@ export default class SQLStorageProvider implements StorageProvider {
       const topicAry = await this.db<Topic>("topicList")
         .where("topicID", "=", Number(topicID))
         .select("*");
-      return topicAry ? topicAry[0] : null;
+      return topicAry.length !== 0 ? topicAry[0] : null;
     } catch (e) {
       console.error(e);
       return null;
@@ -102,6 +103,19 @@ export default class SQLStorageProvider implements StorageProvider {
     return null;
   }
 
+  async getLatestTopicTime() {
+    try {
+      const topicAry = await this.db<Topic>("topicList")
+        .orderBy("lastReplyTime", "desc")
+        .select("lastReplyTime")
+        .limit(1);
+      return topicAry.length !== 0 ? topicAry[0].lastReplyTime : null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
   async getAllTopicID() {
     try {
       const topicID = await this.db<Topic>("topicList").select("topicID");
@@ -113,16 +127,28 @@ export default class SQLStorageProvider implements StorageProvider {
     }
   }
 
-  async getTopicIDForUpdate() {
+  async getTopicIDForUpdate(old = false) {
     try {
-      const topicID = await this.db<Topic>("topicList")
-        .whereRaw("lastFetchTime < lastReplyTime")
-        .orWhereNull("lastFetchTime")
-        .orWhereNotNull("content")
-        .select("topicID")
-        .orderBy("isElite", "desc") // 优先爬精品
-        .limit(config.fetchLimit);
-      return topicID.map((obj) => obj.topicID);
+      if (old) {
+        const topicID = await this.db<Topic>("topicList")
+          .whereNull("lastReplyTime")
+          .whereNull("lastFetchTime")
+          .select("topicID")
+          .orderBy("isElite", "desc") // 优先爬精品
+          .orderBy("topicID", "desc") // 优先爬新帖
+          .limit(config.fetchLimit);
+        return topicID.map((obj) => obj.topicID);
+      } else {
+        const topicID = await this.db<Topic>("topicList")
+          .whereRaw("lastFetchTime < lastReplyTime")
+          .orWhereNull("lastFetchTime")
+          .orWhereNull("content")
+          .select("topicID")
+          .orderBy("isElite", "desc") // 优先爬精品
+          .orderBy("topicID", "desc") // 优先爬新帖
+          .limit(config.fetchLimit);
+        return topicID.map((obj) => obj.topicID);
+      }
     } catch (e) {
       console.log(e);
       return [];

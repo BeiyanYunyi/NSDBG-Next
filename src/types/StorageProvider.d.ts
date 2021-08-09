@@ -9,8 +9,9 @@ export default class StorageProvider {
     topicPart: Partial<Topic>
   ): Promise<unknown>;
   queryTopicInfo(topicID: string | number): Promise<Topic | null>;
+  getLatestTopicTime(): Promise<number | null>;
   getAllTopicID(): Promise<number[] | null>;
-  getTopicIDForUpdate(): Promise<number[]>;
+  getTopicIDForUpdate(old?: boolean): Promise<number[]>;
   insertOrReplaceReplies(replies: Reply[]): Promise<unknown>;
   updateReply(
     replyID: string | number,

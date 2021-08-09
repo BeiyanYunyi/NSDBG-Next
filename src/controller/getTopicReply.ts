@@ -7,9 +7,7 @@ import { basicWait } from "../utils/wait";
 
 const getTopicReply = async (topicID: number | string) => {
   console.log(`在爬${topicID}的回复`);
-  await pageInstance.page.goto(
-    `https://www.douban.com/group/topic/${topicID}/`
-  );
+  // 该函数被 getTopic() 调用，因此假设此时已经在帖子页面内，减少刷新
   const content = await pageInstance.page.content();
   const dom = new JSDOM(content);
   const paginator = dom.window.document.querySelector("div.paginator");
@@ -38,9 +36,8 @@ const getTopicReply = async (topicID: number | string) => {
 };
 
 const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
-  const replyAry = Array.from(
-    dom.window.document.querySelector("ul#comments")!.querySelectorAll("li")
-  );
+  const comments = dom.window.document.querySelector("ul#comments");
+  const replyAry = Array.from(comments ? comments.querySelectorAll("li") : []);
   if (replyAry.length === 0) return [];
   const formattedReplyAry: Reply[] = replyAry.map((reply) => {
     const replyHeader = reply.querySelector("h4")!;

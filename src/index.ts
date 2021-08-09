@@ -16,10 +16,10 @@ import { basicWait } from "./utils/wait";
     message: "客欲何为？",
     choices: [
       { title: "更新帖子列表", value: 0 },
-      { title: "更新帖子内容", value: 1 },
+      { title: "获取帖子内容", value: 1 },
     ],
   });
-  await initPageInstance();
+  await initPageInstance(); // 这样绕一圈是保证 page 已经启动
   switch (action) {
     case 0: {
       let userPageNum = 1;
@@ -50,6 +50,8 @@ import { basicWait } from "./utils/wait";
     default:
       break;
   }
+  // 爬完之后把状态储存下来，这样下次就不用登录了
+  await pageInstance.context.storageState({ path: "./data/browserState.json" });
   await pageInstance.page.close();
   process.exit(0);
 })();

@@ -12,6 +12,8 @@ import { basicWait } from "../utils/wait";
 const getTopicsList = async (pages: string[]) => {
   const topicSet: Set<Topic> = new Set();
   const db = new SQLStorageProvider();
+  const lastReplyTimeInDB = await db.getLatestTopicTime();
+  if (lastReplyTimeInDB) console.log("数据库中已有数据，进行增量更新");
   for (const aPage of pages) {
     try {
       await pageInstance.page.goto(aPage);
@@ -27,6 +29,17 @@ const getTopicsList = async (pages: string[]) => {
           dom.window.document.querySelector("table.olt")!.querySelectorAll("tr")
         )
       );
+      const lastReplyTimeOfFirstTopic = formatLastReplyTime(
+        trAry[0].querySelector("td.time")!.textContent!
+      );
+      if (
+        lastReplyTimeInDB &&
+        lastReplyTimeOfFirstTopic &&
+        lastReplyTimeInDB > lastReplyTimeOfFirstTopic
+      ) {
+        console.log("已获取完所有新内容");
+        break;
+      }
       // 一堆 Non-null assertion, 好孩子不要学
       const topicAry: Topic[] = trAry.map((tr) => ({
         title: tr.querySelector("td.title")!.querySelector("a")!.title!,
