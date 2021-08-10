@@ -95,7 +95,13 @@ const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
       quoting,
       ...quotingContent,
 
-      image: reply.querySelector("div.cmt-img")
+      image: quoting
+        ? Array.from(reply.querySelectorAll("div.cmt-img"))[1]
+          ? Array.from(reply.querySelectorAll("div.cmt-img"))[1].querySelector(
+              "img"
+            )!.src
+          : null
+        : reply.querySelector("div.cmt-img")
         ? reply.querySelector("div.cmt-img")!.querySelector("img")!.src
         : null,
 
