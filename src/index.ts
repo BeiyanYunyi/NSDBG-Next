@@ -50,8 +50,6 @@ import { basicWait } from "./utils/wait";
     default:
       break;
   }
-  // 爬完之后把状态储存下来，这样下次就不用登录了
-  await pageInstance.context.storageState({ path: "./data/browserState.json" });
-  await pageInstance.page.close();
+  await pageInstance.context.close();
   process.exit(0);
 })();

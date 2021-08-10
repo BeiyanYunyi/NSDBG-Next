@@ -1,7 +1,7 @@
 import prompts from "prompts";
 
 import SQLStorageProvider from "../database/SQLStorageProvider";
-import progressBar from "../instances/ProgressBar";
+import progressBar from "../instances/progressBar";
 import { basicWait } from "../utils/wait";
 
 import getTopic from "./getTopic";

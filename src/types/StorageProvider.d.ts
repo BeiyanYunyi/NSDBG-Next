@@ -1,5 +1,5 @@
 import Reply from "./Reply";
-import Topic from "./topic";
+import Topic from "./Topic";
 
 export default class StorageProvider {
   connect(): Promise<unknown>;

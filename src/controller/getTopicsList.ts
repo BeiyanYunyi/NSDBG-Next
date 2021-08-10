@@ -4,8 +4,8 @@ import lodash from "lodash";
 
 import SQLStorageProvider from "../database/SQLStorageProvider";
 import pageInstance from "../instances/Page";
-import progressBar from "../instances/ProgressBar";
-import Topic from "../types/topic";
+import progressBar from "../instances/progressBar";
+import Topic from "../types/Topic";
 import formatLastReplyTime from "../utils/formatLastReplyTime";
 import formatReplyNumber from "../utils/formatReplyNumber";
 import { basicWait } from "../utils/wait";

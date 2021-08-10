@@ -3,7 +3,7 @@ import { knex, Knex } from "knex";
 import config from "../config/config";
 import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
-import Topic from "../types/topic";
+import Topic from "../types/Topic";
 
 export default class SQLStorageProvider implements StorageProvider {
   db: Knex;
