@@ -95,7 +95,8 @@ const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
       quoting,
       ...quotingContent,
 
-      image: quoting
+      // 这叫艺术懂吗？艺术！
+      image: quotingContent.quotingImage
         ? Array.from(reply.querySelectorAll("div.cmt-img"))[1]
           ? Array.from(reply.querySelectorAll("div.cmt-img"))[1].querySelector(
               "img"
