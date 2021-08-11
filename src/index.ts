@@ -1,5 +1,6 @@
 import prompts from "prompts";
 
+import closePageInstance from "./controller/closePageInstance";
 import getTopicsList from "./controller/getTopicsList";
 import initPageInstance from "./controller/initPageInstance";
 import updateTopic from "./controller/updateTopic";
@@ -50,6 +51,6 @@ import { basicWait } from "./utils/wait";
     default:
       break;
   }
-  await pageInstance.context.close();
+  await closePageInstance();
   process.exit(0);
 })();
