@@ -24,6 +24,8 @@ import { basicWait } from "./utils/wait";
     logger.log("！初始化配置！");
     await setConfig();
     cfgInstance.saveConfig();
+    await pressAnyKey("随便按一个键退出");
+    process.exit(0);
   }
   const { action } = await prompts({
     type: "select",
