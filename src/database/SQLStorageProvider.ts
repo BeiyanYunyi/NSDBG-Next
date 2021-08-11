@@ -4,6 +4,7 @@ import config from "../config/config";
 import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
 import Topic from "../types/Topic";
+import logger from "../utils/logger";
 
 export default class SQLStorageProvider implements StorageProvider {
   db: Knex;
@@ -64,7 +65,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .select("*");
       return topicAry.length !== 0 ? topicAry[0] : null;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return null;
     }
   }
@@ -84,7 +85,7 @@ export default class SQLStorageProvider implements StorageProvider {
           "title",
         ]);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     }
     return null;
   }
@@ -98,7 +99,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .where("topicID", "=", Number(topicID))
         .update(topicPart);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     }
     return null;
   }
@@ -112,7 +113,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .limit(1);
       return topicAry.length !== 0 ? topicAry[0].lastReplyTime : null;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return null;
     }
   }
@@ -123,7 +124,7 @@ export default class SQLStorageProvider implements StorageProvider {
       if (topicID.length === 0) return null;
       return topicID.map((obj) => obj.topicID);
     } catch (e) {
-      console.log(e);
+      logger.log(e);
       return null;
     }
   }
@@ -151,7 +152,7 @@ export default class SQLStorageProvider implements StorageProvider {
         return topicID.map((obj) => obj.topicID);
       }
     } catch (e) {
-      console.log(e);
+      logger.log(e);
       return [];
     }
   }
@@ -164,7 +165,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .onConflict("replyID")
         .ignore();
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return null;
     }
   }
@@ -175,7 +176,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .where("replyID", "=", replyID)
         .update(replyPart);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return null;
     }
   }
@@ -186,7 +187,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .where("topicID", "=", Number(topicID))
         .select("*");
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return [];
     }
   }
@@ -198,7 +199,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .select("*");
       return replyAry ? replyAry[0] : null;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return null;
     }
   }

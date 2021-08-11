@@ -8,19 +8,20 @@ import progressBar from "../instances/progressBar";
 import Topic from "../types/Topic";
 import formatLastReplyTime from "../utils/formatLastReplyTime";
 import formatReplyNumber from "../utils/formatReplyNumber";
+import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
 
 const getTopicsList = async (pages: string[]) => {
   const topicSet: Set<Topic> = new Set();
   const db = new SQLStorageProvider();
   const lastReplyTimeInDB = await db.getLatestTopicTime();
-  if (lastReplyTimeInDB) console.log("数据库中已有数据，进行增量更新");
+  if (lastReplyTimeInDB) logger.log("数据库中已有数据，进行增量更新");
   progressBar.start(pages.length, 0, { status: "获取帖子列表" });
   for (const aPage of pages) {
     try {
       await pageInstance.page.goto(aPage);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       await basicWait();
       continue;
     }
@@ -40,7 +41,7 @@ const getTopicsList = async (pages: string[]) => {
         lastReplyTimeOfFirstTopic &&
         lastReplyTimeInDB > lastReplyTimeOfFirstTopic
       ) {
-        console.log("已获取完所有新内容");
+        logger.log("已获取完所有新内容");
         break;
       }
       // 一堆 Non-null assertion, 好孩子不要学

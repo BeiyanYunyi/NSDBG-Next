@@ -8,6 +8,7 @@ import pageInstance from "./instances/Page";
 import getLastPageNum from "./utils/getLastPageNum";
 import getPagesURL from "./utils/getPagesURL";
 import groupURL from "./utils/groupURL";
+import logger from "./utils/logger";
 import { basicWait } from "./utils/wait";
 
 (async () => {
@@ -25,7 +26,7 @@ import { basicWait } from "./utils/wait";
     case 0: {
       let userPageNum = 1;
       if (process.env.ENV === "dev") {
-        console.log("处于开发模式，由用户指定爬取页数");
+        logger.log("处于开发模式，由用户指定爬取页数");
         const { num } = await prompts({
           type: "number",
           name: "num",
