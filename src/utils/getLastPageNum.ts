@@ -14,6 +14,7 @@ const getLastPageNum = (cont: string) => {
       return null;
     })
   );
+  if (pagesAry.length === 0) return 1;
   return Number(pagesAry[pagesAry.length - 2]);
 };
 
