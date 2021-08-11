@@ -1,17 +1,30 @@
+import fs from "fs";
+
+import pressAnyKey from "press-any-key";
 import prompts from "prompts";
 
 import closePageInstance from "./controller/closePageInstance";
 import getTopicsList from "./controller/getTopicsList";
 import initPageInstance from "./controller/initPageInstance";
+import setConfig from "./controller/setConfig";
 import updateTopic from "./controller/updateTopic";
 import pageInstance from "./instances/Page";
+import { cfgInstance } from "./instances/config";
 import getLastPageNum from "./utils/getLastPageNum";
 import getPagesURL from "./utils/getPagesURL";
 import groupURL from "./utils/groupURL";
 import logger from "./utils/logger";
+import pathUtils from "./utils/pathUtils";
 import { basicWait } from "./utils/wait";
 
 (async () => {
+  fs.mkdirSync(pathUtils.dataPath, { recursive: true });
+  const cfgExists = cfgInstance.configExists();
+  if (!cfgExists) {
+    logger.log("！初始化配置！");
+    await setConfig();
+    cfgInstance.saveConfig();
+  }
   const { action } = await prompts({
     type: "select",
     name: "action",
@@ -19,11 +32,12 @@ import { basicWait } from "./utils/wait";
     choices: [
       { title: "更新帖子列表", value: 0 },
       { title: "获取帖子内容", value: 1 },
+      { title: "修改配置信息", value: 2 },
     ],
   });
-  await initPageInstance(); // 这样绕一圈是保证 page 已经启动
   switch (action) {
     case 0: {
+      await initPageInstance(); // 这样绕一圈是保证 page 已经启动
       let userPageNum = 1;
       if (process.env.ENV === "dev") {
         logger.log("处于开发模式，由用户指定爬取页数");
@@ -44,14 +58,21 @@ import { basicWait } from "./utils/wait";
       );
       await basicWait();
       await getTopicsList(pages);
+      await closePageInstance();
       break;
     }
     case 1:
+      await initPageInstance(); // 这样绕一圈是保证 page 已经启动
       await updateTopic();
+      await closePageInstance();
+      break;
+    case 2:
+      await setConfig();
       break;
     default:
       break;
   }
-  await closePageInstance();
+  cfgInstance.saveConfig();
+  await pressAnyKey("运行完毕，随便按一个键退出");
   process.exit(0);
 })();

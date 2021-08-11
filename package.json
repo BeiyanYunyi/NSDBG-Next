@@ -1,5 +1,5 @@
 {
-  "name": "node-scraper-douban-groups-next",
+  "name": "NSDBG-next",
   "version": "1.0.0",
   "description": "豆瓣小组爬虫",
   "main": "build/main/index.js",
@@ -53,6 +53,7 @@
     "knex": "^0.95.9",
     "lodash": "^4.17.21",
     "playwright": "^1.13.1",
+    "press-any-key": "^0.1.1",
     "prompts": "^2.4.1",
     "sqlite3": "^5.0.2"
   },
@@ -106,5 +107,17 @@
     "exclude": [
       "**/*.spec.js"
     ]
+  },
+  "bin": "build/main/index.js",
+  "pkg": {
+    "scripts": "*.js",
+    "assets": [
+      "node_modules/**/*.png",
+      "node_modules/playwright/browsers.json"
+    ],
+    "targets": [
+      "node16-win-x64"
+    ],
+    "outputPath": "dist"
   }
 }

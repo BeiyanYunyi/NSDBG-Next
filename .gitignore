@@ -10,3 +10,4 @@ coverage
 package-lock.json
 src/config/config.ts
 data
+dist

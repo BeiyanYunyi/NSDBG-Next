@@ -1,4 +1,4 @@
-import config from "../config/config";
+import config from "../instances/config";
 
 const wait = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));

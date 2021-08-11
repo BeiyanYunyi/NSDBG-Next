@@ -1,7 +1,7 @@
 import path from "path";
 
 const pathUtils = {
-  dataPath: path.resolve(__dirname, "../../../data"),
+  dataPath: path.resolve(process.cwd(), "./data"),
 };
 
 export default pathUtils;

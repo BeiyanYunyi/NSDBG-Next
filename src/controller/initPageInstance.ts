@@ -25,7 +25,7 @@ const initPageInstance = async () => {
     const cookies = JSON.parse(cookiesBuf.toString());
     await pageInstance.context.addCookies(cookies);
   } catch (e) {
-    logger.log("先登录");
+    logger.log("还没登录，先登录");
     await pageInstance.page.goto("https://www.douban.com");
     // eslint-disable-next-line no-constant-condition
     while (true) {

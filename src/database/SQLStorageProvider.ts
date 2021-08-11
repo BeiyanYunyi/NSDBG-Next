@@ -2,7 +2,7 @@ import path from "path";
 
 import { knex, Knex } from "knex";
 
-import config from "../config/config";
+import config from "../instances/config";
 import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
 import Topic from "../types/Topic";
