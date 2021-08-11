@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import path from "path";
 
 import playwright from "playwright";
 import prompts from "prompts";
@@ -6,10 +7,11 @@ import prompts from "prompts";
 import pageInstance from "../instances/Page";
 import groupURL from "../utils/groupURL";
 import logger from "../utils/logger";
+import pathUtils from "../utils/pathUtils";
 
 const initPageInstance = async () => {
   const context = await playwright.firefox.launchPersistentContext(
-    "./data/browserState",
+    path.join(pathUtils.dataPath, "browserState"),
     { headless: false }
   );
   pageInstance.changeContext(context);
@@ -17,7 +19,9 @@ const initPageInstance = async () => {
   pageInstance.changePage(page);
   // 读取已保存的 cookie 文件，若没有则要求登录
   try {
-    const cookiesBuf = await fs.readFile("./data/cookies.json");
+    const cookiesBuf = await fs.readFile(
+      path.join(pathUtils.dataPath, "cookies.json")
+    );
     const cookies = JSON.parse(cookiesBuf.toString());
     await pageInstance.context.addCookies(cookies);
   } catch (e) {

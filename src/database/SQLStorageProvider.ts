@@ -1,3 +1,5 @@
+import path from "path";
+
 import { knex, Knex } from "knex";
 
 import config from "../config/config";
@@ -5,6 +7,7 @@ import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
 import Topic from "../types/Topic";
 import logger from "../utils/logger";
+import pathUtils from "../utils/pathUtils";
 
 export default class SQLStorageProvider implements StorageProvider {
   db: Knex;
@@ -12,9 +15,10 @@ export default class SQLStorageProvider implements StorageProvider {
     this.db = knex({
       client: "sqlite3",
       connection: {
-        filename: `./data/data-${config.groupURL
-          .substring(29)
-          .replace("/", "")}.db`,
+        filename: path.join(
+          pathUtils.dataPath,
+          `data-${config.groupURL.substring(29).replace("/", "")}.db`
+        ),
       },
       useNullAsDefault: true,
     });
