@@ -37,6 +37,8 @@ export default class SQLStorageProvider implements StorageProvider {
         table.boolean("isElite");
         table.text("content").nullable();
         table.bigInteger("lastFetchTime").nullable();
+        table.bigInteger("createTime").nullable();
+        table.bigInteger("deleteTime").nullable();
       });
     const existReplyTable = await this.db.schema.hasTable("reply");
     if (!existReplyTable)
@@ -133,30 +135,35 @@ export default class SQLStorageProvider implements StorageProvider {
     }
   }
 
-  async getTopicIDForUpdate(old = false) {
+  async getTopicIDForUpdate() {
     try {
-      if (old) {
-        const topicID = await this.db<Topic>("topicList")
-          .whereNull("lastReplyTime")
-          .whereNull("lastFetchTime")
-          .select("topicID")
-          .orderBy("isElite", "desc") // 优先爬精品
-          .orderBy("topicID", "desc") // 优先爬新帖
-          .limit(config.fetchLimit);
-        return topicID.map((obj) => obj.topicID);
-      } else {
-        const topicID = await this.db<Topic>("topicList")
-          .whereRaw("lastFetchTime < lastReplyTime")
-          .orWhereNull("lastFetchTime")
-          .orWhereNull("content")
-          .select("topicID")
-          .orderBy("isElite", "desc") // 优先爬精品
-          .orderBy("topicID", "desc") // 优先爬新帖
-          .limit(config.fetchLimit);
-        return topicID.map((obj) => obj.topicID);
-      }
+      const topicID = await this.db<Topic>("topicList")
+        .whereRaw("lastFetchTime < lastReplyTime")
+        .orWhereNull("lastFetchTime")
+        .orWhereNull("content")
+        .select("topicID")
+        .orderBy("isElite", "asc") // 优先爬精品
+        .orderBy("topicID", "asc") // 优先爬新帖
+        .limit(config.fetchLimit);
+      return topicID.map((obj) => obj.topicID);
     } catch (e) {
-      logger.log(e);
+      logger.error(e);
+      return [];
+    }
+  }
+
+  async getTopicIDForDetect(time: number) {
+    try {
+      const topicID = await this.db<Topic>("topicList")
+        .where("lastReplyTime", ">=", time)
+        .whereNull("deleteTime")
+        .select("topicID")
+        .orderBy("isElite", "desc") // 优先爬精品
+        .orderBy("topicID", "desc") // 优先爬新帖
+        .limit(config.fetchLimit);
+      return topicID.map((obj) => obj.topicID);
+    } catch (e) {
+      logger.error(e);
       return [];
     }
   }

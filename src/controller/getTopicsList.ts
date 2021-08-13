@@ -12,16 +12,25 @@ import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
 
 const getTopicsList = async (pages: string[]) => {
-  const topicSet: Set<Topic> = new Set();
   const db = new SQLStorageProvider();
   const lastReplyTimeInDB = await db.getLatestTopicTime();
   if (lastReplyTimeInDB) logger.log("数据库中已有数据，进行增量更新");
   progressBar.start(pages.length, 0, { status: "获取帖子列表" });
-  for (const aPage of pages) {
+  pages.reverse();
+  const safeValue = Math.floor(pages.length / 10);
+  let failCount = 0;
+  while (pages.length !== 0) {
+    const aPage = pages.pop()!; // 这里 pop 不会返回 undefined，可以放心 non-null assertion
     try {
       await pageInstance.page.goto(aPage);
     } catch (e) {
-      logger.error(e);
+      logger.error(`爬取 ${aPage} 超时，正在重试`);
+      if (failCount > safeValue) {
+        logger.error("出错超总数十分之一，请检查是否有故障");
+        throw new Error("出错超总数十分之一，请检查是否有故障");
+      }
+      pages.push(aPage); // 出错则重新获取
+      failCount += 1;
       await basicWait();
       continue;
     }
@@ -73,17 +82,17 @@ const getTopicsList = async (pages: string[]) => {
 
         isElite: Boolean(tr.querySelector("span.elite_topic_lable")),
 
-        content: null, //这里没获取到
-        lastFetchTime: null, // 同上
+        content: null, // 这些不是在这里获取的，下同
+        lastFetchTime: null,
+        createTime: null,
+        deleteTime: null,
       }));
-      topicAry.forEach((topic) => {
-        topicSet.add(topic);
-      });
       await db.insertOrReplaceTopicInfo(topicAry);
     } else {
       break;
     }
     progressBar.increment(1);
+
     await basicWait();
   }
   return 0;

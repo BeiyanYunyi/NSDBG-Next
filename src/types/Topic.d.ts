@@ -8,4 +8,6 @@ export default interface Topic {
   isElite: boolean;
   content: string | null;
   lastFetchTime: number | null;
+  createTime: number | null;
+  deleteTime: number | null;
 }

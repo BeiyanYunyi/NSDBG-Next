@@ -11,7 +11,8 @@ export default class StorageProvider {
   queryTopicInfo(topicID: string | number): Promise<Topic | null>;
   getLatestTopicTime(): Promise<number | null>;
   getAllTopicID(): Promise<number[] | null>;
-  getTopicIDForUpdate(old?: boolean): Promise<number[]>;
+  getTopicIDForUpdate(): Promise<number[]>;
+  getTopicIDForDetect(time: number): Promise<number[]>;
   insertOrReplaceReplies(replies: Reply[]): Promise<unknown>;
   updateReply(
     replyID: string | number,

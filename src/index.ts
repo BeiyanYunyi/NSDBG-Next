@@ -3,9 +3,8 @@ import fs from "fs";
 import pressAnyKey from "press-any-key";
 import prompts from "prompts";
 
-import closePageInstance from "./controller/closePageInstance";
+import detectTopic from "./controller/detectTopic";
 import getTopicsList from "./controller/getTopicsList";
-import initPageInstance from "./controller/initPageInstance";
 import setConfig from "./controller/setConfig";
 import updateTopic from "./controller/updateTopic";
 import pageInstance from "./instances/Page";
@@ -34,12 +33,13 @@ import { basicWait } from "./utils/wait";
     choices: [
       { title: "更新帖子列表", value: 0 },
       { title: "获取帖子内容", value: 1 },
-      { title: "修改配置信息", value: 2 },
+      { title: "检测帖子状态", value: 2 },
+      { title: "修改配置信息", value: 3 },
     ],
   });
   switch (action) {
     case 0: {
-      await initPageInstance(); // 这样绕一圈是保证 page 已经启动
+      await pageInstance.init(); // 这样绕一圈是保证 page 已经启动
       let userPageNum = 1;
       if (process.env.ENV === "dev") {
         logger.log("处于开发模式，由用户指定爬取页数");
@@ -60,15 +60,16 @@ import { basicWait } from "./utils/wait";
       );
       await basicWait();
       await getTopicsList(pages);
-      await closePageInstance();
+      await pageInstance.close();
       break;
     }
     case 1:
-      await initPageInstance(); // 这样绕一圈是保证 page 已经启动
       await updateTopic();
-      await closePageInstance();
       break;
     case 2:
+      await detectTopic();
+      break;
+    case 3:
       await setConfig();
       break;
     default:

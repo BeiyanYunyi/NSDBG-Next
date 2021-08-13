@@ -1,6 +1,5 @@
-import prompts from "prompts";
-
 import SQLStorageProvider from "../database/SQLStorageProvider";
+import pageInstance from "../instances/Page";
 import progressBar from "../instances/progressBar";
 import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
@@ -8,25 +7,27 @@ import { basicWait } from "../utils/wait";
 import getTopic from "./getTopic";
 
 const updateTopic = async () => {
+  await pageInstance.init();
   const storage = new SQLStorageProvider();
-  const { action }: { action: boolean } = await prompts({
-    type: "select",
-    name: "action",
-    message: "要获取哪些帖的内容？",
-    choices: [
-      { title: "今年的", value: false },
-      { title: "其它时候的", value: true },
-    ],
-  });
-  const topicIDs = await storage.getTopicIDForUpdate(action);
+  const topicIDs = await storage.getTopicIDForUpdate();
   logger.log(`将更新 ${topicIDs.length} 个帖子的内容或回复`);
   progressBar.start(topicIDs.length, 0, { topicID: NaN });
-  for await (const topicID of topicIDs) {
-    progressBar.increment(1, { status: topicID });
+  const safeValue = Math.floor(topicIDs.length / 10);
+  let failCount = 0;
+  while (topicIDs.length !== 0) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const topicID = topicIDs.pop()!; // 不会为 undefined，是安全的
     try {
       await getTopic(topicID);
+      progressBar.increment(1, { status: topicID });
     } catch (e) {
+      if (failCount > safeValue) {
+        logger.error("出错超总数十分之一，请检查是否有故障");
+        throw new Error("出错超总数十分之一，请检查是否有故障");
+      }
+      failCount += 1;
       logger.error(e);
+      topicIDs.push(topicID);
       await basicWait();
       continue;
     }
@@ -34,6 +35,7 @@ const updateTopic = async () => {
   }
   progressBar.stop();
   logger.log("更新成功");
+  await pageInstance.close();
 };
 
 export default updateTopic;

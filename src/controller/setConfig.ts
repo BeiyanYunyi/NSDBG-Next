@@ -1,19 +1,13 @@
 import prompts from "prompts";
 
 import config, { cfgInstance } from "../instances/config";
+import numberValidate from "../utils/numberValidate";
 
 const groupMsgValidate = (inputStr: string) => {
   if (inputStr.split("?").length !== 1) {
     return "格式不正确，请确定已经把问号和后面的东西都删掉了";
   }
   return true;
-};
-
-const numberValidate = (inputStr: string) => {
-  if (/^\d+$/.test(inputStr)) {
-    return true;
-  }
-  return "格式不正确，请确保输入的是数字";
 };
 
 const setConfig = async () => {
