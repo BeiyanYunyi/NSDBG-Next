@@ -110,6 +110,12 @@ const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
       content: reply
         .querySelector("p.reply-content")!
         .textContent!.replaceAll("\n", "<br />"),
+
+      votes: Number(
+        reply
+          .querySelector("a.comment-vote")!
+          .textContent!.replace(/[^0-9]/gi, "")
+      ),
     };
   });
   return formattedReplyAry;

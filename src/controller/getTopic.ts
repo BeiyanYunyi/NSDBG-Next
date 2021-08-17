@@ -34,18 +34,29 @@ const getTopic = async (topicID: number | string) => {
       )
     ) / 1000
   );
+  const replies = await getTopicReply(topicID);
   await storage.updateTopicInfo(topicID, {
     content: mainContent,
     lastFetchTime: Math.floor(Date.now() / 1000),
+    reply: replies.length,
     createTime,
     deleteTime: getTopicDeleteTime(content),
   });
-  const replies = await getTopicReply(topicID);
   if (replies.length !== 0) {
     await storage.insertOrReplaceReplies(replies);
-    await storage.updateTopicInfo(topicID, {
-      lastReplyTime: replies[replies.length - 1].replyTime,
-    });
+    const topicInfo = await storage.queryTopicInfo(topicID)!;
+    if (topicInfo!.lastReplyTime === null) {
+      await storage.updateTopicInfo(topicID, {
+        lastReplyTime: replies[replies.length - 1].replyTime,
+      });
+    }
+  } else {
+    const topicInfo = await storage.queryTopicInfo(topicID)!;
+    if (topicInfo!.lastReplyTime === null) {
+      await storage.updateTopicInfo(topicID, {
+        lastReplyTime: createTime,
+      });
+    }
   }
   return false;
 };

@@ -10,8 +10,6 @@
   "keywords": [],
   "scripts": {
     "start": "cross-env ENV=production node build/main/index.js",
-    "dev": "cross-env ENV=dev node build/main/index.js",
-    "predev": "yarn build",
     "prestart": "yarn build",
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.json",

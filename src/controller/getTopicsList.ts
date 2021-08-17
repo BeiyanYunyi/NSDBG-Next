@@ -4,6 +4,7 @@ import lodash from "lodash";
 
 import SQLStorageProvider from "../database/SQLStorageProvider";
 import pageInstance from "../instances/Page";
+import likeDeletedTopics from "../instances/likeDeletedTopics";
 import progressBar from "../instances/progressBar";
 import Topic from "../types/Topic";
 import formatLastReplyTime from "../utils/formatLastReplyTime";
@@ -11,10 +12,11 @@ import formatReplyNumber from "../utils/formatReplyNumber";
 import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
 
-const getTopicsList = async (pages: string[]) => {
+const getTopicsList = async (pages: string[], manual = false) => {
   const db = new SQLStorageProvider();
   const lastReplyTimeInDB = await db.getLatestTopicTime();
-  if (lastReplyTimeInDB) logger.log("数据库中已有数据，进行增量更新");
+  if (lastReplyTimeInDB && !manual)
+    logger.log("数据库中已有数据，进行增量更新");
   progressBar.start(pages.length, 0, { status: "获取帖子列表" });
   pages.reverse();
   const safeValue = Math.floor(pages.length / 10);
@@ -36,61 +38,70 @@ const getTopicsList = async (pages: string[]) => {
     }
     const cont = await pageInstance.page.content();
     const dom = new JSDOM(cont);
-    if (dom.window.document.querySelector("table.olt")) {
-      const trAry = lodash.drop(
-        Array.from(
-          dom.window.document.querySelector("table.olt")!.querySelectorAll("tr")
-        )
-      );
-      const lastReplyTimeOfFirstTopic = formatLastReplyTime(
-        trAry[0].querySelector("td.time")!.textContent!
-      );
-      if (
-        lastReplyTimeInDB &&
-        lastReplyTimeOfFirstTopic &&
-        lastReplyTimeInDB > lastReplyTimeOfFirstTopic
-      ) {
-        logger.log("已获取完所有新内容");
-        break;
-      }
-      // 一堆 Non-null assertion, 好孩子不要学
-      const topicAry: Topic[] = trAry.map((tr) => ({
-        title: tr.querySelector("td.title")!.querySelector("a")!.title!,
-
-        authorID: tr
-          .querySelector("td[nowrap]")!
-          .querySelector("a")!
-          .href.substring(30)
-          .replace("/", ""),
-
-        authorName: tr.querySelector("td[nowrap]")!.querySelector("a")!
-          .textContent!,
-
-        reply: formatReplyNumber(tr.querySelector("td.r-count")!.textContent!),
-
-        lastReplyTime: formatLastReplyTime(
+    if (!dom.window.document.querySelector("table.olt")) break;
+    const trAry = lodash.drop(
+      Array.from(
+        dom.window.document.querySelector("table.olt")!.querySelectorAll("tr")
+      )
+    );
+    const lastReplyTimeOfFirstTopic = formatLastReplyTime(
+      trAry[0].querySelector("td.time")!.textContent!
+    );
+    if (
+      !manual &&
+      lastReplyTimeInDB &&
+      lastReplyTimeOfFirstTopic &&
+      lastReplyTimeInDB > lastReplyTimeOfFirstTopic
+    ) {
+      logger.log("已获取完所有新内容");
+      break;
+    }
+    // 一堆 Non-null assertion, 好孩子不要学
+    const topicAry: Topic[] = await Promise.all(
+      trAry.map(async (tr) => {
+        const lastReplyTimeInList = formatLastReplyTime(
           tr.querySelector("td.time")!.textContent!
-        ),
-
-        topicID: Number(
+        );
+        const topicID = Number(
           tr
             .querySelector("td.title")!
             .querySelector("a")!
             .href!.substring(35)
             .replace("/", "")
-        ),
+        );
+        return {
+          title: tr.querySelector("td.title")!.querySelector("a")!.title!,
 
-        isElite: Boolean(tr.querySelector("span.elite_topic_lable")),
+          authorID: tr
+            .querySelector("td[nowrap]")!
+            .querySelector("a")!
+            .href.substring(30)
+            .replace("/", ""),
 
-        content: null, // 这些不是在这里获取的，下同
-        lastFetchTime: null,
-        createTime: null,
-        deleteTime: null,
-      }));
-      await db.insertOrReplaceTopicInfo(topicAry);
-    } else {
-      break;
-    }
+          authorName: tr.querySelector("td[nowrap]")!.querySelector("a")!
+            .textContent!,
+
+          reply: formatReplyNumber(
+            tr.querySelector("td.r-count")!.textContent!
+          ),
+
+          lastReplyTime: lastReplyTimeInList
+            ? lastReplyTimeInList
+            : (await db.queryTopicInfo(topicID))!.lastReplyTime,
+
+          topicID,
+
+          isElite: Boolean(tr.querySelector("span.elite_topic_lable")),
+
+          content: null, // 这些不是在这里获取的，下同
+          lastFetchTime: null,
+          createTime: null,
+          deleteTime: null,
+        };
+      })
+    );
+    await db.insertOrReplaceTopicInfo(topicAry);
+    await likeDeletedTopics.detectTopicRough(topicAry);
     progressBar.increment(1);
 
     await basicWait();

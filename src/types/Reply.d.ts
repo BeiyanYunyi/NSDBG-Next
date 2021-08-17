@@ -12,4 +12,5 @@ export default interface Reply {
   quotingAuthorName: string | null;
   image: string | null;
   content: string;
+  votes: number;
 }

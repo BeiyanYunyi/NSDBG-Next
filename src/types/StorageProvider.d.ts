@@ -12,7 +12,11 @@ export default class StorageProvider {
   getLatestTopicTime(): Promise<number | null>;
   getAllTopicID(): Promise<number[] | null>;
   getTopicIDForUpdate(): Promise<number[]>;
-  getTopicIDForDetect(time: number): Promise<number[]>;
+  getTopicIDByTimeRange(
+    minTime: number,
+    maxTime?: number,
+    limit?: number
+  ): Promise<number[]>;
   insertOrReplaceReplies(replies: Reply[]): Promise<unknown>;
   updateReply(
     replyID: string | number,

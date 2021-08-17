@@ -56,6 +56,7 @@ export default class SQLStorageProvider implements StorageProvider {
         table.string("quotingAuthorName").nullable();
         table.text("image").nullable();
         table.text("content");
+        table.integer("votes").defaultTo(0);
         table.foreign("topicID").references("topicList.topicID");
       });
   }
@@ -141,9 +142,10 @@ export default class SQLStorageProvider implements StorageProvider {
         .whereRaw("lastFetchTime < lastReplyTime")
         .orWhereNull("lastFetchTime")
         .orWhereNull("content")
+        .orWhereNull("lastReplyTime")
         .select("topicID")
-        .orderBy("isElite", "asc") // 优先爬精品
-        .orderBy("topicID", "asc") // 优先爬新帖
+        .orderBy("isElite", "desc") // 优先爬精品
+        .orderBy("topicID", "desc") // 优先爬新帖
         .limit(config.fetchLimit);
       return topicID.map((obj) => obj.topicID);
     } catch (e) {
@@ -152,15 +154,20 @@ export default class SQLStorageProvider implements StorageProvider {
     }
   }
 
-  async getTopicIDForDetect(time: number) {
+  async getTopicIDByTimeRange(
+    minTime: number,
+    maxTime = Infinity,
+    limit?: number
+  ) {
     try {
       const topicID = await this.db<Topic>("topicList")
-        .where("lastReplyTime", ">=", time)
+        .where("lastReplyTime", ">=", minTime)
+        .where("lastReplyTime", "<=", maxTime)
         .whereNull("deleteTime")
         .select("topicID")
         .orderBy("isElite", "desc") // 优先爬精品
         .orderBy("topicID", "desc") // 优先爬新帖
-        .limit(config.fetchLimit);
+        .limit(limit ? limit : config.fetchLimit);
       return topicID.map((obj) => obj.topicID);
     } catch (e) {
       logger.error(e);

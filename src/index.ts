@@ -3,12 +3,12 @@ import fs from "fs";
 import pressAnyKey from "press-any-key";
 import prompts from "prompts";
 
-import detectTopic from "./controller/detectTopic";
 import getTopicsList from "./controller/getTopicsList";
 import setConfig from "./controller/setConfig";
 import updateTopic from "./controller/updateTopic";
 import pageInstance from "./instances/Page";
 import { cfgInstance } from "./instances/config";
+import likeDeletedTopics from "./instances/likeDeletedTopics";
 import getLastPageNum from "./utils/getLastPageNum";
 import getPagesURL from "./utils/getPagesURL";
 import groupURL from "./utils/groupURL";
@@ -40,35 +40,34 @@ import { basicWait } from "./utils/wait";
   switch (action) {
     case 0: {
       await pageInstance.init(); // 这样绕一圈是保证 page 已经启动
-      let userPageNum = 1;
-      if (process.env.ENV === "dev") {
-        logger.log("处于开发模式，由用户指定爬取页数");
-        const { num } = await prompts({
-          type: "number",
-          name: "num",
-          message: "要爬几页？一页 25 帖",
-          initial: 1,
-          min: 1,
-        });
-        userPageNum = num;
-      }
       await pageInstance.page.goto(groupURL);
       const cont = await pageInstance.page.content();
       const lastPageNum = getLastPageNum(cont);
-      const pages = getPagesURL(
-        process.env.ENV === "dev" ? userPageNum : lastPageNum
-      );
+      const pages = getPagesURL(lastPageNum);
       await basicWait();
       await getTopicsList(pages);
+      await likeDeletedTopics.detectTopicPrecise();
       await pageInstance.close();
       break;
     }
     case 1:
       await updateTopic();
       break;
-    case 2:
-      await detectTopic();
+    case 2: {
+      await pageInstance.init(); // 这样绕一圈是保证 page 已经启动
+      const { userPageNum } = await prompts({
+        type: "number",
+        name: "userPageNum",
+        message: "要检测多少页？",
+        initial: 1,
+        min: 1,
+      });
+      const pages = getPagesURL(Number(userPageNum));
+      await getTopicsList(pages, true);
+      await likeDeletedTopics.detectTopicPrecise();
+      await pageInstance.close();
       break;
+    }
     case 3:
       await setConfig();
       break;
