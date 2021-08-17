@@ -72,6 +72,7 @@ const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
           quotingAuthorID: null,
           quotingAuthorName: null,
         };
+    const votesElement = reply.querySelector("a.comment-vote");
 
     return {
       replyID: Number(reply.id),
@@ -111,11 +112,9 @@ const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
         .querySelector("p.reply-content")!
         .textContent!.replaceAll("\n", "<br />"),
 
-      votes: Number(
-        reply
-          .querySelector("a.comment-vote")!
-          .textContent!.replace(/[^0-9]/gi, "")
-      ),
+      votes: votesElement
+        ? Number(votesElement.textContent!.replace(/[^0-9]/gi, ""))
+        : 0,
     };
   });
   return formattedReplyAry;

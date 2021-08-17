@@ -181,7 +181,7 @@ export default class SQLStorageProvider implements StorageProvider {
       return await this.db<Reply>("reply")
         .insert(replies)
         .onConflict("replyID")
-        .ignore();
+        .merge();
     } catch (e) {
       logger.error(e);
       return null;
