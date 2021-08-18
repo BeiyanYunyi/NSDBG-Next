@@ -7,7 +7,6 @@ test
 src/**.js
 coverage
 *.log
-package-lock.json
 src/config/config.ts
 data
 dist
