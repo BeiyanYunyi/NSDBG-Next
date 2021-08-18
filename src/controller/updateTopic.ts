@@ -6,6 +6,7 @@ import { basicWait } from "../utils/wait";
 
 import getTopic from "./getTopic";
 
+/** 该函数用于更新所有应当被更新的帖子的内容。 */
 const updateTopic = async () => {
   await pageInstance.init();
   const storage = new SQLStorageProvider();

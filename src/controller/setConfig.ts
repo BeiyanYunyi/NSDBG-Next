@@ -10,6 +10,9 @@ const groupMsgValidate = (inputStr: string) => {
   return true;
 };
 
+/** 用于交互式地调整设置，当然，一个合格的开发者应该具备直接更改 json
+ * 甚至源代码的能力，可惜这个项目并不完全是设计给开发者使用的。
+ */
 const setConfig = async () => {
   const { groupURL }: { groupURL: string } = await prompts({
     message: "输入小组链接，注意把问号和后面的东西都删掉（如果有的话）",

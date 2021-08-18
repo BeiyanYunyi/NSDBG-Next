@@ -8,19 +8,23 @@ import groupURL from "../utils/groupURL";
 import logger from "../utils/logger";
 import pathUtils from "../utils/pathUtils";
 
+/** 定义了一个 Page 类 */
 class Page {
   page!: playwright.Page; // 好孩子别学我
 
   context!: playwright.BrowserContext;
 
+  /** {@link page} 的修改方法，将 page 修改为参数 */
   changePage(page: playwright.Page) {
     this.page = page;
   }
 
+  /** {@link context} 的修改方法，将 context 修改为参数 */
   changeContext(context: playwright.BrowserContext) {
     this.context = context;
   }
 
+  /** 初始化方法。在这里完成用户登录等操作。 */
   async init() {
     const context = await playwright.firefox.launchPersistentContext(
       path.join(pathUtils.dataPath, "browserState"),
@@ -57,6 +61,7 @@ class Page {
     await this.page.goto(groupURL);
   }
 
+  /** 保存cookies，然后关闭网页 */
   async close() {
     const cookies = await this.context.cookies();
     await fs.writeFile(
@@ -67,6 +72,7 @@ class Page {
   }
 }
 
+/** 全程用一个实例就好，只用导出一个实例就行 */
 const pageInstance = new Page();
 
 export default pageInstance;

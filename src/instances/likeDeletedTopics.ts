@@ -8,11 +8,21 @@ import { basicWait } from "../utils/wait";
 
 import progressBar from "./progressBar";
 
+/** class，用于粗检与保存疑似删除的帖子，然后细检它们。 */
 class LikeDeletedTopics {
   likeDeletedTopics: number[];
+
   constructor() {
     this.likeDeletedTopics = [];
   }
+
+  /** 粗检疑似删除的帖子。原理是在帖子列表中取最大回复时间和最小回复时间，
+   * 然后在数据库中取出这段时间内的帖子列表，并相互比对。大凡获取到的帖子列表中没有，
+   * 而数据库取出的列表里面有的，视为疑似被删除的帖子。
+   * 疑似被删除的帖子会被加入该类下的数组中，等待细检。
+   *
+   * 该方法存在假阳性的可能，故只能用作粗检。
+   */
   async detectTopicRough(topicList: Topic[]) {
     const replyTimeAry = lodash.compact(
       topicList.map((topic) => topic.lastReplyTime)
@@ -33,6 +43,8 @@ class LikeDeletedTopics {
       );
     this.likeDeletedTopics.push(...difference);
   }
+
+  /** 细检疑似删除的帖子。原理是调用 {@link getTopic} 逐个访问该类下数组的元素。*/
   async detectTopicPrecise() {
     const topicIDs = this.likeDeletedTopics;
     if (topicIDs.length === 0) return Promise.resolve();
@@ -65,6 +77,7 @@ class LikeDeletedTopics {
   }
 }
 
+/** 全程用一个实例就好，只用导出一个实例就行 */
 const likeDeletedTopics = new LikeDeletedTopics();
 
 export default likeDeletedTopics;

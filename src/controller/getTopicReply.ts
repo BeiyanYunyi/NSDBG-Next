@@ -5,11 +5,12 @@ import pageInstance from "../instances/Page";
 import Reply from "../types/Reply";
 import { basicWait } from "../utils/wait";
 
+/** 该函数用于获取帖子的回复 */
 const getTopicReply = async (topicID: number | string) => {
   // 该函数被 getTopic() 调用，因此假设此时已经在帖子页面内，减少刷新
   const content = await pageInstance.page.content();
   const dom = new JSDOM(content);
-  const paginator = dom.window.document.querySelector("div.paginator");
+  const paginator = dom.window.document.querySelector("div.paginator"); // 判断帖子有无分页
   const replySet = new Set<Reply>();
   if (paginator) {
     const pages = Number(

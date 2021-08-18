@@ -7,6 +7,10 @@ import getTopicDeleteTime from "../utils/getTopicDeleteTime";
 
 import getTopicReply from "./getTopicReply";
 
+/** 原谅我贫弱的英文。该函数用于获取单个帖子的所有内容，调用
+ * {@link getTopicReply} 和 {@link getTopicDeleteTime}
+ * 从而先判断帖子是否被删除，然后获取帖子主楼内容，最后获取帖子回复。
+ */
 const getTopic = async (topicID: number | string) => {
   await pageInstance.page.goto(
     `https://www.douban.com/group/topic/${topicID}/`

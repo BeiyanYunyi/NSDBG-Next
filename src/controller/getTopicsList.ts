@@ -12,6 +12,10 @@ import formatReplyNumber from "../utils/formatReplyNumber";
 import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
 
+/** 该函数用于获取帖子列表，并调用 {@link likeDeletedTopics} 的
+ * detectTopicRough 方法，
+ * 根据发帖时间与数据库比对，粗判帖子删除情况。
+ */
 const getTopicsList = async (pages: string[], manual = false) => {
   const db = new SQLStorageProvider();
   const lastReplyTimeInDB = await db.getLatestTopicTime();
