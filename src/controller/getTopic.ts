@@ -19,7 +19,10 @@ const getTopic = async (topicID: number | string) => {
   const deleteTime = getTopicDeleteTime(content);
   const storage = new SQLStorageProvider();
   if (deleteTime) {
-    await storage.updateTopicInfo(topicID, { deleteTime });
+    await storage.updateTopicInfo(topicID, {
+      deleteTime,
+      lastFetchTime: Math.abs(deleteTime),
+    });
     return true;
   }
   const dom = new JSDOM(content);
