@@ -1,5 +1,4 @@
 import SQLStorageProvider from "../database/SQLStorageProvider";
-import pageInstance from "../instances/Page";
 import progressBar from "../instances/progressBar";
 import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
@@ -8,7 +7,6 @@ import getTopic from "./getTopic";
 
 /** 该函数用于更新所有应当被更新的帖子的内容。 */
 const updateTopic = async () => {
-  await pageInstance.init();
   const storage = new SQLStorageProvider();
   const topicIDs = await storage.getTopicIDForUpdate();
   topicIDs.reverse(); // 不在数据库中用排序是因为有获取条数限制
@@ -37,7 +35,6 @@ const updateTopic = async () => {
   }
   progressBar.stop();
   logger.log("更新成功");
-  await pageInstance.close();
 };
 
 export default updateTopic;

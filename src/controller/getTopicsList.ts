@@ -57,7 +57,7 @@ const getTopicsList = async (pages: string[], manual = false) => {
       lastReplyTimeOfFirstTopic &&
       lastReplyTimeInDB > lastReplyTimeOfFirstTopic
     ) {
-      logger.log("已获取完所有新内容");
+      logger.log("帖子列表获取完毕");
       break;
     }
     // 一堆 Non-null assertion, 好孩子不要学

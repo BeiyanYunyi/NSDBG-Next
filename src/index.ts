@@ -31,10 +31,9 @@ import { basicWait } from "./utils/wait";
     name: "action",
     message: "客欲何为？",
     choices: [
-      { title: "更新帖子列表", value: 0 },
-      { title: "获取帖子内容", value: 1 },
-      { title: "检测帖子状态", value: 2 },
-      { title: "修改配置信息", value: 3 },
+      { title: "更新帖子", value: 0 },
+      { title: "检测帖子状态", value: 1 },
+      { title: "修改配置", value: 2 },
     ],
   });
   switch (action) {
@@ -47,14 +46,11 @@ import { basicWait } from "./utils/wait";
       await basicWait();
       await getTopicsList(pages);
       await likeDeletedTopics.detectTopicPrecise();
+      await updateTopic();
       await pageInstance.close();
       break;
     }
-    case 1:
-      await updateTopic();
-      break;
-    case 2: {
-      await pageInstance.init(); // 这样绕一圈是保证 page 已经启动
+    case 1: {
       const { userPageNum } = await prompts({
         type: "number",
         name: "userPageNum",
@@ -62,13 +58,15 @@ import { basicWait } from "./utils/wait";
         initial: 1,
         min: 1,
       });
+      await pageInstance.init(); // 这样绕一圈是保证 page 已经启动
       const pages = getPagesURL(Number(userPageNum));
       await getTopicsList(pages, true);
       await likeDeletedTopics.detectTopicPrecise();
+      await updateTopic();
       await pageInstance.close();
       break;
     }
-    case 3:
+    case 2:
       await setConfig();
       break;
     default:
