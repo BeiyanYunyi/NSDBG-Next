@@ -54,6 +54,11 @@ const getTopic = async (topicID: number | string) => {
   });
   if (replies.length !== 0) {
     await storage.insertOrReplaceReplies(replies);
+    const saveImagePary = replies.map(async (reply) => {
+      if (reply.image) await saveImage(reply.image);
+      if (reply.quotingImage) await saveImage(reply.quotingImage);
+    });
+    await Promise.all(saveImagePary);
     const topicInfo = await storage.queryTopicInfo(topicID)!;
     if (topicInfo!.lastReplyTime === null) {
       await storage.updateTopicInfo(topicID, {

@@ -3,7 +3,6 @@ import { JSDOM } from "jsdom";
 
 import pageInstance from "../instances/Page";
 import Reply from "../types/Reply";
-import saveImage from "../utils/saveImage";
 import { basicWait } from "../utils/wait";
 
 /** 该函数用于获取帖子的回复 */
@@ -75,9 +74,6 @@ const getTopicReplyOfOnePage = async (dom: JSDOM, topicID: string | number) => {
             quotingAuthorID: null,
             quotingAuthorName: null,
           };
-      if (quotingContent.quotingImage) {
-        await saveImage(quotingContent.quotingImage);
-      }
       const votesElement = reply.querySelector("a.comment-vote");
 
       return {
