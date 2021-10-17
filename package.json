@@ -10,7 +10,7 @@
   "keywords": [],
   "scripts": {
     "start": "cross-env ENV=production node build/main/index.js",
-    "prestart": "npm run build",
+    "dev": "npm run build && npm start",
     "install-playwright": "playwright install firefox",
     "build": "tsc -p tsconfig.json",
     "fix": "run-s fix:*",
@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@bitauth/libauth": "^1.17.1",
+    "axios": "^0.23.0",
     "cli-progress": "^3.9.0",
     "colors": "^1.4.0",
     "cross-env": "^7.0.3",

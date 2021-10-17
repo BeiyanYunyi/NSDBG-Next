@@ -1,7 +1,7 @@
 import lodash from "lodash";
 
 import getTopic from "../controller/getTopic";
-import SQLStorageProvider from "../database/SQLStorageProvider";
+import storage from "../database/instanceGetter";
 import Topic from "../types/Topic";
 import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
@@ -30,7 +30,6 @@ class LikeDeletedTopics {
     if (replyTimeAry.length === 0) return Promise.resolve(); // 防止捞到不是今年的帖子
     const maxTime = Math.max(...replyTimeAry);
     const minTime = Math.min(...replyTimeAry);
-    const storage = new SQLStorageProvider();
     const topicsIDInDBAry = await storage.getTopicIDByTimeRange(
       minTime,
       maxTime

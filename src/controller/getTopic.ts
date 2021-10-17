@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { JSDOM } from "jsdom";
 
-import SQLStorageProvider from "../database/SQLStorageProvider";
+import storage from "../database/instanceGetter";
 import pageInstance from "../instances/Page";
 import getTopicDeleteTime from "../utils/getTopicDeleteTime";
+import saveImage from "../utils/saveImage";
 
 import getTopicReply from "./getTopicReply";
 
@@ -17,7 +18,6 @@ const getTopic = async (topicID: number | string) => {
   );
   const content = await pageInstance.page.content();
   const deleteTime = getTopicDeleteTime(content);
-  const storage = new SQLStorageProvider();
   if (deleteTime) {
     await storage.updateTopicInfo(topicID, {
       deleteTime,
@@ -31,9 +31,12 @@ const getTopic = async (topicID: number | string) => {
     const title = detailTitle.textContent!.substring(3);
     await storage.updateTopicInfo(topicID, { title });
   }
-  const mainContent = dom.window.document
-    .querySelector("div.rich-content")!
-    .outerHTML.replaceAll("\n", "<br />");
+  const mainContentElement =
+    dom.window.document.querySelector("div.rich-content")!;
+  const mainContent = mainContentElement.outerHTML.replaceAll("\n", "<br />");
+  Array.from(mainContentElement.querySelectorAll("img")).forEach((img) =>
+    saveImage(img.src)
+  );
   const createTime = Math.floor(
     Number(
       new Date(

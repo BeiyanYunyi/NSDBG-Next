@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 
 import pageInstance from "../instances/Page";
 import Reply from "../types/Reply";
+import saveImage from "../utils/saveImage";
 import { basicWait } from "../utils/wait";
 
 /** 该函数用于获取帖子的回复 */
@@ -17,7 +18,7 @@ const getTopicReply = async (topicID: number | string) => {
       paginator.querySelector("span.thispage")!.attributes[1].textContent!
     );
     // 先爬第一页
-    getTopicReplyOfOnePage(dom, topicID).forEach((reply) =>
+    (await getTopicReplyOfOnePage(dom, topicID)).forEach((reply) =>
       replySet.add(reply)
     );
     // 从第二页开始循环爬
@@ -28,96 +29,101 @@ const getTopicReply = async (topicID: number | string) => {
       );
       const content = await pageInstance.page.content();
       const dom = new JSDOM(content);
-      getTopicReplyOfOnePage(dom, topicID).forEach((reply) =>
+      (await getTopicReplyOfOnePage(dom, topicID)).forEach((reply) =>
         replySet.add(reply)
       );
     }
   } else {
-    getTopicReplyOfOnePage(dom, topicID).forEach((reply) =>
+    (await getTopicReplyOfOnePage(dom, topicID)).forEach((reply) =>
       replySet.add(reply)
     );
   }
   return Array.from(replySet);
 };
 
-const getTopicReplyOfOnePage = (dom: JSDOM, topicID: string | number) => {
+const getTopicReplyOfOnePage = async (dom: JSDOM, topicID: string | number) => {
   const comments = dom.window.document.querySelector("ul#comments");
   const replyAry = Array.from(comments ? comments.querySelectorAll("li") : []);
   if (replyAry.length === 0) return [];
-  const formattedReplyAry: Reply[] = replyAry.map((reply) => {
-    const replyHeader = reply.querySelector("h4")!;
-    const quotingContentElement = reply.querySelector(
-      "div.reply-quote-content"
-    );
-    const quoting = Boolean(quotingContentElement);
+  const formattedReplyAry: Reply[] = await Promise.all(
+    replyAry.map(async (reply) => {
+      const replyHeader = reply.querySelector("h4")!;
+      const quotingContentElement = reply.querySelector(
+        "div.reply-quote-content"
+      );
+      const quoting = Boolean(quotingContentElement);
 
-    const quotingContent = quoting
-      ? {
-          quotingImage: quotingContentElement!.querySelector("img")
-            ? quotingContentElement!.querySelector("img")!.src
-            : null,
-          quotingText:
-            quotingContentElement!.querySelector("span.all")!.textContent,
-          quotingAuthorID: quotingContentElement!
-            .querySelector("span.pubdate")!
-            .querySelector("a")!
-            .href.substring(30)
-            .replace("/", ""),
-          quotingAuthorName: quotingContentElement!
-            .querySelector("span.pubdate")!
-            .querySelector("a")!.textContent,
-        }
-      : {
-          quotingImage: null,
-          quotingText: null,
-          quotingAuthorID: null,
-          quotingAuthorName: null,
-        };
-    const votesElement = reply.querySelector("a.comment-vote");
+      const quotingContent = quoting
+        ? {
+            quotingImage: quotingContentElement!.querySelector("img")
+              ? quotingContentElement!.querySelector("img")!.src
+              : null,
+            quotingText:
+              quotingContentElement!.querySelector("span.all")!.textContent,
+            quotingAuthorID: quotingContentElement!
+              .querySelector("span.pubdate")!
+              .querySelector("a")!
+              .href.substring(30)
+              .replace("/", ""),
+            quotingAuthorName: quotingContentElement!
+              .querySelector("span.pubdate")!
+              .querySelector("a")!.textContent,
+          }
+        : {
+            quotingImage: null,
+            quotingText: null,
+            quotingAuthorID: null,
+            quotingAuthorName: null,
+          };
+      if (quotingContent.quotingImage) {
+        await saveImage(quotingContent.quotingImage);
+      }
+      const votesElement = reply.querySelector("a.comment-vote");
 
-    return {
-      replyID: Number(reply.id),
+      return {
+        replyID: Number(reply.id),
 
-      topicID: Number(topicID),
+        topicID: Number(topicID),
 
-      authorID: replyHeader
-        .querySelector("a")!
-        .href.substring(30)
-        .replace("/", ""),
+        authorID: replyHeader
+          .querySelector("a")!
+          .href.substring(30)
+          .replace("/", ""),
 
-      authorName: replyHeader.querySelector("a")!.textContent!,
+        authorName: replyHeader.querySelector("a")!.textContent!,
 
-      isPoster: Boolean(replyHeader.querySelector("span.topic-author-icon")),
+        isPoster: Boolean(replyHeader.querySelector("span.topic-author-icon")),
 
-      replyTime:
-        Number(
-          new Date(replyHeader.querySelector("span.pubtime")!.textContent!)
-        ) / 1000,
+        replyTime:
+          Number(
+            new Date(replyHeader.querySelector("span.pubtime")!.textContent!)
+          ) / 1000,
 
-      quoting,
+        quoting,
 
-      ...quotingContent,
+        ...quotingContent,
 
-      // 这叫艺术懂吗？艺术！
-      image: quotingContent.quotingImage
-        ? Array.from(reply.querySelectorAll("div.cmt-img"))[1]
-          ? Array.from(reply.querySelectorAll("div.cmt-img"))[1].querySelector(
-              "img"
-            )!.src
-          : null
-        : reply.querySelector("div.cmt-img")
-        ? reply.querySelector("div.cmt-img")!.querySelector("img")!.src
-        : null,
+        // 这叫艺术懂吗？艺术！
+        image: quotingContent.quotingImage
+          ? Array.from(reply.querySelectorAll("div.cmt-img"))[1]
+            ? Array.from(
+                reply.querySelectorAll("div.cmt-img")
+              )[1].querySelector("img")!.src
+            : null
+          : reply.querySelector("div.cmt-img")
+          ? reply.querySelector("div.cmt-img")!.querySelector("img")!.src
+          : null,
 
-      content: reply
-        .querySelector("p.reply-content")!
-        .textContent!.replaceAll("\n", "<br />"),
+        content: reply
+          .querySelector("p.reply-content")!
+          .textContent!.replaceAll("\n", "<br />"),
 
-      votes: votesElement
-        ? Number(votesElement.textContent!.replace(/[^0-9]/gi, ""))
-        : 0,
-    };
-  });
+        votes: votesElement
+          ? Number(votesElement.textContent!.replace(/[^0-9]/gi, ""))
+          : 0,
+      };
+    })
+  );
   return formattedReplyAry;
 };
 

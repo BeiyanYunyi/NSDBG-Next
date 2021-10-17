@@ -6,6 +6,7 @@ import prompts from "prompts";
 import getTopicsList from "./controller/getTopicsList";
 import setConfig from "./controller/setConfig";
 import updateTopic from "./controller/updateTopic";
+import storage from "./database/instanceGetter";
 import pageInstance from "./instances/Page";
 import { cfgInstance } from "./instances/config";
 import likeDeletedTopics from "./instances/likeDeletedTopics";
@@ -26,6 +27,7 @@ import { basicWait } from "./utils/wait";
     await pressAnyKey("随便按一个键退出");
     process.exit(0);
   }
+  await storage.connect();
   const { action } = await prompts({
     type: "select",
     name: "action",

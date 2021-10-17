@@ -3,6 +3,7 @@ import path from "path";
 import { knex, Knex } from "knex";
 
 import config from "../instances/config";
+import Image from "../types/Image";
 import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
 import Topic from "../types/Topic";
@@ -24,7 +25,7 @@ export default class SQLStorageProvider implements StorageProvider {
     });
   }
 
-  private async createTable() {
+  async connect(): Promise<void> {
     const existTopicList = await this.db.schema.hasTable("topicList");
     if (!existTopicList)
       await this.db.schema.createTable("topicList", (table) => {
@@ -59,10 +60,12 @@ export default class SQLStorageProvider implements StorageProvider {
         table.integer("votes").defaultTo(0);
         table.foreign("topicID").references("topicList.topicID");
       });
-  }
-
-  connect(): Promise<unknown> {
-    return Promise.resolve();
+    const existImageTable = await this.db.schema.hasTable("image");
+    if (!existImageTable)
+      await this.db.schema.createTable("image", (table) => {
+        table.string("imgID").primary();
+        table.binary("imgContent");
+      });
   }
 
   async queryTopicInfo(topicID: string | number): Promise<Topic | null> {
@@ -79,7 +82,6 @@ export default class SQLStorageProvider implements StorageProvider {
 
   async insertOrReplaceTopicInfo(topics: Topic[]): Promise<unknown> {
     try {
-      await this.createTable();
       await this.db<Topic>("topicList")
         .insert(topics)
         .onConflict("topicID")
@@ -113,7 +115,6 @@ export default class SQLStorageProvider implements StorageProvider {
 
   async getLatestTopicTime() {
     try {
-      await this.createTable();
       const topicAry = await this.db<Topic>("topicList")
         .orderBy("lastReplyTime", "desc")
         .select("lastReplyTime")
@@ -177,7 +178,6 @@ export default class SQLStorageProvider implements StorageProvider {
 
   async insertOrReplaceReplies(replies: Reply[]) {
     try {
-      await this.createTable();
       return await this.db<Reply>("reply")
         .insert(replies)
         .onConflict("replyID")
@@ -219,6 +219,14 @@ export default class SQLStorageProvider implements StorageProvider {
     } catch (e) {
       logger.error(e);
       return null;
+    }
+  }
+
+  async savePicture(image: Image) {
+    try {
+      await this.db<Image>("image").insert(image).onConflict("imgID").ignore();
+    } catch (e) {
+      logger.error(e);
     }
   }
 }

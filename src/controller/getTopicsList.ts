@@ -2,7 +2,7 @@
 import { JSDOM } from "jsdom";
 import lodash from "lodash";
 
-import SQLStorageProvider from "../database/SQLStorageProvider";
+import storage from "../database/instanceGetter";
 import pageInstance from "../instances/Page";
 import likeDeletedTopics from "../instances/likeDeletedTopics";
 import progressBar from "../instances/progressBar";
@@ -17,8 +17,7 @@ import { basicWait } from "../utils/wait";
  * 根据发帖时间与数据库比对，粗判帖子删除情况。
  */
 const getTopicsList = async (pages: string[], manual = false) => {
-  const db = new SQLStorageProvider();
-  const lastReplyTimeInDB = await db.getLatestTopicTime();
+  const lastReplyTimeInDB = await storage.getLatestTopicTime();
   if (lastReplyTimeInDB && !manual)
     logger.log("数据库中已有数据，进行增量更新");
   progressBar.start(pages.length, 0, { status: "获取帖子列表" });
@@ -91,7 +90,7 @@ const getTopicsList = async (pages: string[], manual = false) => {
 
           lastReplyTime: lastReplyTimeInList
             ? lastReplyTimeInList
-            : (await db.queryTopicInfo(topicID))!.lastReplyTime,
+            : (await storage.queryTopicInfo(topicID))!.lastReplyTime,
 
           topicID,
 
@@ -104,7 +103,7 @@ const getTopicsList = async (pages: string[], manual = false) => {
         };
       })
     );
-    await db.insertOrReplaceTopicInfo(topicAry);
+    await storage.insertOrReplaceTopicInfo(topicAry);
     await likeDeletedTopics.detectTopicRough(topicAry);
     progressBar.increment(1);
 
