@@ -63,7 +63,7 @@ export default class SQLStorageProvider implements StorageProvider {
     const existImageTable = await this.db.schema.hasTable("image");
     if (!existImageTable)
       await this.db.schema.createTable("image", (table) => {
-        table.string("imgID").primary();
+        table.bigInteger("imgID").primary().unsigned();
         table.binary("imgContent");
       });
   }
@@ -227,6 +227,20 @@ export default class SQLStorageProvider implements StorageProvider {
       await this.db<Image>("image").insert(image).onConflict("imgID").ignore();
     } catch (e) {
       logger.error(e);
+    }
+  }
+
+  async isPictureSaved(imgID: number) {
+    try {
+      const result = await this.db<Image>("image")
+        .select("imgID")
+        .where("imgID", imgID);
+      const imgsID = result.map((img) => Number(img.imgID));
+      if (imgsID.includes(imgID)) return true;
+      return false;
+    } catch (e) {
+      logger.error(e);
+      return false;
     }
   }
 }

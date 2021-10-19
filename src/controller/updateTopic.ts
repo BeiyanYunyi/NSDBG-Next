@@ -1,4 +1,5 @@
 import storage from "../database/instanceGetter";
+import getImageController from "../instances/getImageController";
 import progressBar from "../instances/progressBar";
 import logger from "../utils/logger";
 import { basicWait } from "../utils/wait";
@@ -33,6 +34,7 @@ const updateTopic = async () => {
     await basicWait();
   }
   progressBar.stop();
+  await getImageController.getImages();
   logger.log("更新成功");
 };
 

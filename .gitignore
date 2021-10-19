@@ -10,3 +10,4 @@ coverage
 src/config/config.ts
 data
 dist
+mainConfig/mainConfig.json

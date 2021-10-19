@@ -1,4 +1,4 @@
 export default interface Image {
-  imgID: string;
+  imgID: number;
   imgContent: Blob;
 }

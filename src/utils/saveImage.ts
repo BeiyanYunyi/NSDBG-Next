@@ -2,10 +2,11 @@ import axios from "axios";
 
 import storage from "../database/instanceGetter";
 
+import getImgID from "./getImgID";
+
 const saveImage = async (imgURL: string) => {
   const imgJpgURL = imgURL.replace(".webp", ".jpg");
-  const imgURLAry = imgJpgURL.split("/");
-  const imgID = imgURLAry[imgURLAry.length - 1].replace(".jpg", "");
+  const imgID = getImgID(imgURL);
   const { data }: { data: Blob } = await axios.get(imgJpgURL, {
     headers: {
       "User-Agent":
@@ -14,8 +15,8 @@ const saveImage = async (imgURL: string) => {
         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/jxl,image/jpeg,*/*;q=0.8",
     },
     responseType: "arraybuffer",
+    timeout: 5000,
   });
-  // const imgContent = new Blob([data], { type: "image/jpeg" });
   await storage.savePicture({ imgID, imgContent: data });
 };
 

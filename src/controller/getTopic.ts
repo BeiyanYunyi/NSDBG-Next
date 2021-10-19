@@ -3,8 +3,8 @@ import { JSDOM } from "jsdom";
 
 import storage from "../database/instanceGetter";
 import pageInstance from "../instances/Page";
+import getImageController from "../instances/getImageController";
 import getTopicDeleteTime from "../utils/getTopicDeleteTime";
-import saveImage from "../utils/saveImage";
 
 import getTopicReply from "./getTopicReply";
 
@@ -35,7 +35,7 @@ const getTopic = async (topicID: number | string) => {
     dom.window.document.querySelector("div.rich-content")!;
   const mainContent = mainContentElement.outerHTML.replaceAll("\n", "<br />");
   Array.from(mainContentElement.querySelectorAll("img")).forEach((img) =>
-    saveImage(img.src)
+    getImageController.pushImageURLToSet(img.src)
   );
   const createTime = Math.floor(
     Number(
@@ -54,11 +54,11 @@ const getTopic = async (topicID: number | string) => {
   });
   if (replies.length !== 0) {
     await storage.insertOrReplaceReplies(replies);
-    const saveImagePary = replies.map(async (reply) => {
-      if (reply.image) await saveImage(reply.image);
-      if (reply.quotingImage) await saveImage(reply.quotingImage);
+    replies.forEach((reply) => {
+      if (reply.image) getImageController.pushImageURLToSet(reply.image);
+      if (reply.quotingImage)
+        getImageController.pushImageURLToSet(reply.quotingImage);
     });
-    await Promise.all(saveImagePary);
     const topicInfo = await storage.queryTopicInfo(topicID)!;
     if (topicInfo!.lastReplyTime === null) {
       await storage.updateTopicInfo(topicID, {
