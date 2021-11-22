@@ -1,19 +1,18 @@
-import path from "path";
-
 import { knex, Knex } from "knex";
 
 import config from "../instances/config";
-import Image from "../types/Image";
+import mainConfig from "../mainConfig/mainConfig.json";
+import Image, { ImageInDB } from "../types/Image";
 import Reply from "../types/Reply";
 import StorageProvider from "../types/StorageProvider";
 import Topic from "../types/Topic";
 import logger from "../utils/logger";
-import pathUtils from "../utils/pathUtils";
 
 export default class SQLStorageProvider implements StorageProvider {
   db: Knex;
   constructor() {
     this.db = knex({
+      /*
       client: "sqlite3",
       connection: {
         filename: path.join(
@@ -21,11 +20,26 @@ export default class SQLStorageProvider implements StorageProvider {
           `data-${config.groupURL.substring(29).replace("/", "")}.db`
         ),
       },
+      */
+      client: "pg",
+      connection: {
+        host: mainConfig.address,
+        port: mainConfig.port,
+        user: mainConfig.username,
+        password: mainConfig.password,
+        database: mainConfig.database,
+      },
       useNullAsDefault: true,
+      searchPath: [config.groupURL.substring(29).replace("/", ""), "public"],
     });
   }
 
   async connect(): Promise<void> {
+    /*
+    await this.db.schema.createSchemaIfNotExists(
+      config.groupURL.substring(29).replace("/", "")
+    );
+    */
     const existTopicList = await this.db.schema.hasTable("topicList");
     if (!existTopicList)
       await this.db.schema.createTable("topicList", (table) => {
@@ -63,7 +77,8 @@ export default class SQLStorageProvider implements StorageProvider {
     const existImageTable = await this.db.schema.hasTable("image");
     if (!existImageTable)
       await this.db.schema.createTable("image", (table) => {
-        table.bigInteger("imgID").primary().unsigned();
+        table.bigIncrements("id").primary();
+        table.string("imgID").index().unique();
         table.binary("imgContent");
       });
   }
@@ -119,7 +134,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .orderBy("lastReplyTime", "desc")
         .select("lastReplyTime")
         .limit(1);
-      return topicAry.length !== 0 ? topicAry[0].lastReplyTime : null;
+      return topicAry.length !== 0 ? Number(topicAry[0].lastReplyTime) : null;
     } catch (e) {
       logger.error(e);
       return null;
@@ -140,7 +155,7 @@ export default class SQLStorageProvider implements StorageProvider {
   async getTopicIDForUpdate() {
     try {
       const topicID = await this.db<Topic>("topicList")
-        .whereRaw("lastFetchTime < lastReplyTime")
+        .whereRaw('"lastFetchTime" < "lastReplyTime"')
         .orWhereNull("lastFetchTime")
         .orWhereNull("content")
         .orWhereNull("lastReplyTime")
@@ -169,7 +184,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .orderBy("isElite", "desc") // 优先爬精品
         .orderBy("topicID", "desc") // 优先爬新帖
         .limit(limit ? limit : config.fetchLimit);
-      return topicID.map((obj) => obj.topicID);
+      return topicID.map((obj) => Number(obj.topicID));
     } catch (e) {
       logger.error(e);
       return [];
@@ -181,7 +196,7 @@ export default class SQLStorageProvider implements StorageProvider {
       return await this.db<Reply>("reply")
         .insert(replies)
         .onConflict("replyID")
-        .merge();
+        .merge(["votes"]);
     } catch (e) {
       logger.error(e);
       return null;
@@ -230,17 +245,16 @@ export default class SQLStorageProvider implements StorageProvider {
     }
   }
 
-  async isPictureSaved(imgID: number) {
+  async getLastImagesId(limit: number) {
     try {
-      const result = await this.db<Image>("image")
+      const result = await this.db<ImageInDB>("image")
         .select("imgID")
-        .where("imgID", imgID);
-      const imgsID = result.map((img) => Number(img.imgID));
-      if (imgsID.includes(imgID)) return true;
-      return false;
+        .orderBy("id", "desc")
+        .limit(limit);
+      return result.map((img) => img.imgID);
     } catch (e) {
       logger.error(e);
-      return false;
+      return [];
     }
   }
 }

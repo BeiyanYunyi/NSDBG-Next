@@ -59,14 +59,22 @@ const getTopicReplyOfOnePage = async (dom: JSDOM, topicID: string | number) => {
               : null,
             quotingText:
               quotingContentElement!.querySelector("span.all")!.textContent,
-            quotingAuthorID: quotingContentElement!
-              .querySelector("span.pubdate")!
-              .querySelector("a")!
-              .href.substring(30)
-              .replace("/", ""),
-            quotingAuthorName: quotingContentElement!
-              .querySelector("span.pubdate")!
-              .querySelector("a")!.textContent,
+            quotingAuthorID: quotingContentElement!.querySelector(
+              "span.pubdate"
+            )
+              ? quotingContentElement!
+                  .querySelector("span.pubdate")!
+                  .querySelector("a")!
+                  .href.substring(30)
+                  .replace("/", "")
+              : null,
+            quotingAuthorName: quotingContentElement!.querySelector(
+              "span.pubdate"
+            )
+              ? quotingContentElement!
+                  .querySelector("span.pubdate")!
+                  .querySelector("a")!.textContent
+              : null,
           }
         : {
             quotingImage: null,

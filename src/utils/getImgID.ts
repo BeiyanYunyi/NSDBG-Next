@@ -3,7 +3,7 @@ const getImgID = (imgURL: string) => {
     .replace(".webp", "")
     .replace(".jpg", "")
     .split("/");
-  return Number(imgURLStrAry[imgURLStrAry.length - 1].substring(1));
+  return imgURLStrAry[imgURLStrAry.length - 1].substring(1);
 };
 
 export default getImgID;

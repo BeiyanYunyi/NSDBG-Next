@@ -104,7 +104,9 @@ const getTopicsList = async (pages: string[], manual = false) => {
       })
     );
     await storage.insertOrReplaceTopicInfo(topicAry);
-    await likeDeletedTopics.detectTopicRough(topicAry);
+    if (lastReplyTimeInDB) {
+      await likeDeletedTopics.detectTopicRough(topicAry);
+    }
     progressBar.increment(1);
 
     await basicWait();

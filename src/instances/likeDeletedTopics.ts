@@ -25,7 +25,7 @@ class LikeDeletedTopics {
    */
   async detectTopicRough(topicList: Topic[]) {
     const replyTimeAry = lodash.compact(
-      topicList.map((topic) => topic.lastReplyTime)
+      topicList.map((topic) => Number(topic.lastReplyTime))
     );
     if (replyTimeAry.length === 0) return Promise.resolve(); // 防止捞到不是今年的帖子
     const maxTime = Math.max(...replyTimeAry);

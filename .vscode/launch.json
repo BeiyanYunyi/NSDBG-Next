@@ -10,8 +10,8 @@
       "runtimeArgs": ["${file}"],
       "port": 9229,
       "outputCapture": "std",
-      "skipFiles": ["<node_internals>/**/*.js"],
-      "preLaunchTask": "npm: build"
+      "skipFiles": ["<node_internals>/**/*.js"]
+      // "preLaunchTask": "npm: build"
       // "smartStep": true
     },
     {
