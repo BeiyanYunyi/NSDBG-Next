@@ -2,7 +2,8 @@ const log = (...args: unknown[]) => {
   console.log("\n" + args);
 };
 
-const error = (...args: Error[] | string[]) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const error = (...args: any[]) => {
   if (typeof args[0] === "string") {
     console.error("\n" + args);
   } else {

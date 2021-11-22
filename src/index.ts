@@ -33,13 +33,13 @@ import { basicWait } from "./utils/wait";
     name: "action",
     message: "客欲何为？",
     choices: [
-      { title: "更新帖子", value: 0 },
-      { title: "检测帖子状态", value: 1 },
-      { title: "修改配置", value: 2 },
+      { title: "更新帖子", value: "0" },
+      { title: "检测帖子状态", value: "1" },
+      { title: "修改配置", value: "2" },
     ],
   });
   switch (action) {
-    case 0: {
+    case "0": {
       await pageInstance.init(); // 这样绕一圈是保证 page 已经启动
       await pageInstance.page.goto(groupURL);
       const cont = await pageInstance.page.content();
@@ -52,7 +52,7 @@ import { basicWait } from "./utils/wait";
       await pageInstance.close();
       break;
     }
-    case 1: {
+    case "1": {
       const { userPageNum } = await prompts({
         type: "number",
         name: "userPageNum",
@@ -68,7 +68,7 @@ import { basicWait } from "./utils/wait";
       await pageInstance.close();
       break;
     }
-    case 2:
+    case "2":
       await setConfig();
       break;
     default:

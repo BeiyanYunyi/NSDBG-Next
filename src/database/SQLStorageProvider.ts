@@ -1,4 +1,4 @@
-import { knex, Knex } from "knex";
+import knex from "knex";
 
 import config from "../instances/config";
 import mainConfig from "../mainConfig/mainConfig.json";
@@ -9,30 +9,27 @@ import Topic from "../types/Topic";
 import logger from "../utils/logger";
 
 export default class SQLStorageProvider implements StorageProvider {
-  db: Knex;
-  constructor() {
-    this.db = knex({
-      /*
-      client: "sqlite3",
-      connection: {
-        filename: path.join(
-          pathUtils.dataPath,
-          `data-${config.groupURL.substring(29).replace("/", "")}.db`
-        ),
-      },
-      */
-      client: "pg",
-      connection: {
-        host: mainConfig.address,
-        port: mainConfig.port,
-        user: mainConfig.username,
-        password: mainConfig.password,
-        database: mainConfig.database,
-      },
-      useNullAsDefault: true,
-      searchPath: [config.groupURL.substring(29).replace("/", ""), "public"],
-    });
-  }
+  db = knex({
+    /*
+    client: "sqlite3",
+    connection: {
+      filename: path.join(
+        pathUtils.dataPath,
+        `data-${config.groupURL.substring(29).replace("/", "")}.db`
+      ),
+    },
+    */
+    client: "pg",
+    connection: {
+      host: mainConfig.address,
+      port: mainConfig.port,
+      user: mainConfig.username,
+      password: mainConfig.password,
+      database: mainConfig.database,
+    },
+    useNullAsDefault: true,
+    searchPath: [config.groupURL.substring(29).replace("/", ""), "public"],
+  });
 
   async connect(): Promise<void> {
     /*
@@ -84,6 +81,7 @@ export default class SQLStorageProvider implements StorageProvider {
   }
 
   async queryTopicInfo(topicID: string | number): Promise<Topic | null> {
+    const bbb = "";
     try {
       const topicAry = await this.db<Topic>("topicList")
         .where("topicID", "=", Number(topicID))
