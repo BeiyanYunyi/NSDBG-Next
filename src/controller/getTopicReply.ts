@@ -85,9 +85,9 @@ const getTopicReplyOfOnePage = async (dom: JSDOM, topicID: string | number) => {
       const votesElement = reply.querySelector("a.comment-vote");
 
       return {
-        replyID: Number(reply.id),
+        replyID: reply.id,
 
-        topicID: Number(topicID),
+        topicID: topicID.toString(),
 
         authorID: replyHeader
           .querySelector("a")!

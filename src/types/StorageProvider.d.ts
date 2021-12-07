@@ -9,14 +9,15 @@ export default class StorageProvider {
     topicPart: Partial<Topic>
   ): Promise<unknown>;
   queryTopicInfo(topicID: string | number): Promise<Topic | null>;
+  updateReplyCount(topicID: string): Promise<void>;
   getLatestTopicTime(): Promise<number | null>;
-  getAllTopicID(): Promise<number[] | null>;
-  getTopicIDForUpdate(): Promise<number[]>;
+  getAllTopicID(): Promise<string[] | null>;
+  getTopicIDForUpdate(): Promise<string[]>;
   getTopicIDByTimeRange(
     minTime: number,
     maxTime?: number,
     limit?: number
-  ): Promise<number[]>;
+  ): Promise<string[]>;
   insertOrReplaceReplies(replies: Reply[]): Promise<unknown>;
   updateReply(
     replyID: string | number,

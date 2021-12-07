@@ -65,13 +65,11 @@ const getTopicsList = async (pages: string[], manual = false) => {
         const lastReplyTimeInList = formatLastReplyTime(
           tr.querySelector("td.time")!.textContent!
         );
-        const topicID = Number(
-          tr
-            .querySelector("td.title")!
-            .querySelector("a")!
-            .href!.substring(35)
-            .replace("/", "")
-        );
+        const topicID = tr
+          .querySelector("td.title")!
+          .querySelector("a")!
+          .href!.substring(35)
+          .replace("/", "");
         return {
           title: tr.querySelector("td.title")!.querySelector("a")!.title!,
 

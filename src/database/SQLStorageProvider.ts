@@ -1,5 +1,4 @@
 import knex from "knex";
-
 import config from "../instances/config";
 import mainConfig from "../mainConfig/mainConfig.json";
 import Image, { ImageInDB } from "../types/Image";
@@ -31,57 +30,12 @@ export default class SQLStorageProvider implements StorageProvider {
     searchPath: [config.groupURL.substring(29).replace("/", ""), "public"],
   });
 
-  async connect(): Promise<void> {
-    /*
-    await this.db.schema.createSchemaIfNotExists(
-      config.groupURL.substring(29).replace("/", "")
-    );
-    */
-    const existTopicList = await this.db.schema.hasTable("topicList");
-    if (!existTopicList)
-      await this.db.schema.createTable("topicList", (table) => {
-        table.string("title");
-        table.string("authorID");
-        table.string("authorName");
-        table.integer("reply").unsigned();
-        table.bigInteger("lastReplyTime").nullable().unsigned().index();
-        table.bigInteger("topicID").primary().unsigned();
-        table.boolean("isElite");
-        table.text("content").nullable();
-        table.bigInteger("lastFetchTime").nullable();
-        table.bigInteger("createTime").nullable();
-        table.bigInteger("deleteTime").nullable();
-      });
-    const existReplyTable = await this.db.schema.hasTable("reply");
-    if (!existReplyTable)
-      await this.db.schema.createTable("reply", (table) => {
-        table.bigInteger("replyID").primary().unsigned();
-        table.bigInteger("topicID").unsigned();
-        table.string("authorID");
-        table.string("authorName");
-        table.boolean("isPoster");
-        table.bigInteger("replyTime").unsigned().index();
-        table.boolean("quoting");
-        table.text("quotingImage").nullable();
-        table.text("quotingText").nullable();
-        table.string("quotingAuthorID").nullable();
-        table.string("quotingAuthorName").nullable();
-        table.text("image").nullable();
-        table.text("content");
-        table.integer("votes").defaultTo(0);
-        table.foreign("topicID").references("topicList.topicID");
-      });
-    const existImageTable = await this.db.schema.hasTable("image");
-    if (!existImageTable)
-      await this.db.schema.createTable("image", (table) => {
-        table.bigIncrements("id").primary();
-        table.string("imgID").index().unique();
-        table.binary("imgContent");
-      });
+  /** 已废弃，为兼容性保留此方法。 */
+  connect(): Promise<void> {
+    return Promise.resolve();
   }
 
   async queryTopicInfo(topicID: string | number): Promise<Topic | null> {
-    const bbb = "";
     try {
       const topicAry = await this.db<Topic>("topicList")
         .where("topicID", "=", Number(topicID))
@@ -98,14 +52,7 @@ export default class SQLStorageProvider implements StorageProvider {
       await this.db<Topic>("topicList")
         .insert(topics)
         .onConflict("topicID")
-        .merge([
-          "authorID",
-          "authorName",
-          "isElite",
-          "lastReplyTime",
-          "reply",
-          "title",
-        ]);
+        .merge(["authorID", "authorName", "isElite", "lastReplyTime", "title"]);
     } catch (e) {
       logger.error(e);
     }
@@ -124,6 +71,31 @@ export default class SQLStorageProvider implements StorageProvider {
       logger.error(e);
     }
     return null;
+  }
+
+  async updateReplyCount(topicID: string) {
+    try {
+      const lastReplyPms = this.db<Reply>("reply")
+        .first("replyTime")
+        .where("topicID", topicID)
+        .orderBy("replyTime", "desc");
+      const countPms = this.db<Reply>("reply")
+        .count({ count: "replyID" })
+        .where("topicID", topicID);
+      const [lastReply, count] = await Promise.all([lastReplyPms, countPms]);
+      if (count.length !== 0 && count[0].count && lastReply) {
+        console.log({
+          reply: Number(count[0].count),
+          lastReplyTime: lastReply.replyTime,
+        });
+        await this.updateTopicInfo(topicID, {
+          reply: Number(count[0].count),
+          lastReplyTime: lastReply.replyTime,
+        });
+      }
+    } catch (e) {
+      logger.error(e);
+    }
   }
 
   async getLatestTopicTime() {
@@ -154,6 +126,7 @@ export default class SQLStorageProvider implements StorageProvider {
     try {
       const topicID = await this.db<Topic>("topicList")
         .whereRaw('"lastFetchTime" < "lastReplyTime"')
+        .andWhereNot("deleteTime", "<", 0)
         .orWhereNull("lastFetchTime")
         .orWhereNull("content")
         .orWhereNull("lastReplyTime")
@@ -182,7 +155,7 @@ export default class SQLStorageProvider implements StorageProvider {
         .orderBy("isElite", "desc") // 优先爬精品
         .orderBy("topicID", "desc") // 优先爬新帖
         .limit(limit ? limit : config.fetchLimit);
-      return topicID.map((obj) => Number(obj.topicID));
+      return topicID.map((obj) => obj.topicID);
     } catch (e) {
       logger.error(e);
       return [];

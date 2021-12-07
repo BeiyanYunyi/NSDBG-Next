@@ -4,7 +4,7 @@ export default interface Topic {
   authorName: string;
   reply: number;
   lastReplyTime: number | null;
-  topicID: number;
+  topicID: string;
   isElite: boolean;
   content: string | null;
   lastFetchTime: number | null;

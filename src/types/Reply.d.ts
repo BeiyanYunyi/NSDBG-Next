@@ -1,6 +1,6 @@
 export default interface Reply {
-  replyID: number;
-  topicID: number;
+  replyID: string;
+  topicID: string;
   authorID: string;
   authorName: string;
   isPoster: boolean;

@@ -10,7 +10,7 @@ import progressBar from "./progressBar";
 
 /** class，用于粗检与保存疑似删除的帖子，然后细检它们。 */
 class LikeDeletedTopics {
-  likeDeletedTopics: number[];
+  likeDeletedTopics: string[];
 
   constructor() {
     this.likeDeletedTopics = [];

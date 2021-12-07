@@ -19,6 +19,7 @@ const updateTopic = async () => {
     const topicID = topicIDs.pop()!; // 不会为 undefined，是安全的
     try {
       await getTopic(topicID);
+      await storage.updateReplyCount(topicID);
       progressBar.increment(1, { status: topicID });
     } catch (e) {
       if (failCount > safeValue) {
